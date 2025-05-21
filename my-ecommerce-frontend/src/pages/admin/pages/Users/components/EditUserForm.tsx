@@ -96,6 +96,7 @@ export const EditUserForm = ({ user, onSave }: EditUserFormProps) => {
       isOpen={isOpen}
       title="Edit User"
       description="Edit user details"
+      classNames="w-80"
     >
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
@@ -144,7 +145,7 @@ export const EditUserForm = ({ user, onSave }: EditUserFormProps) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-end space-x-3 pt-2">
+        <div className="flex items-center justify-end space-x-3 pt-8">
           <Button
             type="button"
             variant="outline"

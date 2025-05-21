@@ -26,6 +26,7 @@ interface ResponsiveFormProps {
   children: React.ReactNode;
   handleOpenDialog?: () => void;
   isOpen?: boolean;
+  classNames?: string;
 }
 export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
   title,
@@ -35,6 +36,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
   children,
   handleOpenDialog,
   isOpen = false,
+  classNames = "",
 }) => {
   const isMobile = useIsMobile();
 
@@ -54,7 +56,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
             </Button>
           )}
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className={classNames}>
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             {description && (

@@ -100,7 +100,7 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
     <Button
       variant="outline"
       size="icon"
-      className="absolute h-15 w-15 z-10 bottom-5 right-5 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+      className="fixed h-15 w-15 z-10 bottom-5 right-5 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
     >
       <PackagePlus className="!h-7 !w-7" />
     </Button>
