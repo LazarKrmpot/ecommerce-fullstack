@@ -43,6 +43,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { UploadProducts } from "./components/UploadProducts/UploadProducts";
 
 export const Products = () => {
   const [page, setPage] = useState(1);
@@ -210,6 +211,7 @@ export const Products = () => {
               </div>
             </div>
           </form>
+          <UploadProducts getStats={fetchStats} />
           <CreateProductForm
             categories={categories}
             onSubmit={handleCreateProduct}

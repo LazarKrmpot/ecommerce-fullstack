@@ -75,7 +75,7 @@ export class Product extends Document {
   @Expose()
   @IsNumber()
   @IsOptional()
-  @prop({ type: Number })
+  @prop({ type: Number, default: 0 })
   public rating: number;
 
   @Expose()

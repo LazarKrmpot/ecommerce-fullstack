@@ -294,18 +294,17 @@ export class ProductController {
           const {
             name,
             description,
-            categoryId,
-            status,
-            isFeatured,
-            rating,
-            currency,
             price,
             stock,
-            shopId,
+            isFeatured,
+            categoryId,
+            status,
+            rating,
+            currency,
           } = row;
 
           // Validate required fields
-          if (!name || !categoryId || !price || !shopId) {
+          if (!name || !categoryId || !price) {
             errors.push(`Row missing required fields: ${JSON.stringify(row)}`);
             continue;
           }
@@ -314,7 +313,7 @@ export class ProductController {
           if (
             isNaN(Number(price)) ||
             isNaN(Number(stock)) ||
-            isNaN(Number(rating))
+            (rating && isNaN(Number(rating)))
           ) {
             errors.push(
               `Invalid numeric values in row: ${JSON.stringify(row)}`,
@@ -322,8 +321,8 @@ export class ProductController {
             continue;
           }
 
-          // Validate currency
-          if (!Object.values(Currency).includes(currency)) {
+          // Validate currency only if provided
+          if (currency && !Object.values(Currency).includes(currency)) {
             errors.push(
               `Invalid currency ${currency} in row: ${JSON.stringify(row)}`,
             );
@@ -338,11 +337,10 @@ export class ProductController {
             categoryId,
             status: status || ProductStatus.INSTOCK,
             isFeatured: isFeaturedBoolValue,
-            rating: Number(rating),
-            currency,
+            rating: rating ? Number(rating) : 0,
+            currency: currency || Currency.RSD,
             price: Number(price),
             stock: Number(stock),
-            shopId,
           });
         } catch (error: any) {
           errors.push(

@@ -108,3 +108,20 @@ export const deleteProduct = async (id: string) => {
     throw error;
   }
 };
+
+export const uploadProducts = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const { data } = await api.post("/products/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data;
+  } catch (error) {
+    console.error("Error uploading products:", error);
+    throw error;
+  }
+};
