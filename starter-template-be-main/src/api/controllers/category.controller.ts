@@ -61,8 +61,15 @@ export class CategoryController {
     if (existingCategories.length > 0) {
       throw new BadRequestError('Category already exists');
     }
-    await this.categoriesService.create({ name, description });
-    return { message: 'Category created successfully' };
+    const createdCategory = await this.categoriesService.create({
+      name,
+      description,
+    });
+
+    const newCategory = await this.categoriesService.findOneById(
+      createdCategory._id,
+    );
+    return { data: newCategory };
   }
 
   @Put('/:id')
@@ -79,16 +86,16 @@ export class CategoryController {
   @Delete('/:id')
   @Authorized(Roles.ADMIN)
   public async deleteCategory(@Param('id') id: Ref<Category>) {
-    const products = await this.productService.find({
+    // First get the products that will be deleted
+    const productsToDelete = await this.productService.find({
       filter: { categoryId: id },
     });
 
-    if (products.length > 0) {
-      throw new BadRequestError(
-        `Cannot delete category because it is associated with ${products.length} products`,
-      );
-    }
     await this.categoriesService.delete(id);
-    return { message: 'Category deleted successfully' };
+
+    return {
+      message: 'Category deleted successfully',
+      deletedProducts: productsToDelete,
+    };
   }
 }

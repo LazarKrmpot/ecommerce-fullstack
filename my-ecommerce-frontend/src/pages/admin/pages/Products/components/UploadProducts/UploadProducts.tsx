@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { PackagePlus, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useState, useMemo } from "react";
 import { ResponsiveForm } from "@/components/ResponsiveForm";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -52,9 +52,9 @@ export const UploadProducts = ({ getStats }: UploadProductsProps) => {
       <Button
         variant="outline"
         size="icon"
-        className="fixed h-15 w-15 z-10 bottom-5 right-5 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+        className="fixed h-15 w-15 z-10 bottom-23 right-5 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
       >
-        <PackagePlus className="!h-7 !w-7" />
+        <Upload className="!h-7 !w-7" />
       </Button>
     ) : (
       <Button
@@ -71,7 +71,6 @@ export const UploadProducts = ({ getStats }: UploadProductsProps) => {
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
       title="Upload Products"
-      triggerIcon={<Upload className="h-4 w-4" />}
       description="Form accepts a csv file with the following headers: name, description, price, stock, isFeatured, categoryId"
       customTrigger={trigger}
       classNames="mx-auto py-8 px-4 md:px-6 min-w-[90vw] h-[90vh] overflow-y-auto"

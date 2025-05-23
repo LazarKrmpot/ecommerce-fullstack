@@ -20,5 +20,5 @@ export const useCategories = () => {
     }
   }, []);
 
-  return { categories, isLoadingCategories, fetchCategories };
+  return { categories, setCategories, fetchCategories, isLoadingCategories };
 };

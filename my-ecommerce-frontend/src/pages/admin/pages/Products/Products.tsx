@@ -44,6 +44,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { UploadProducts } from "./components/UploadProducts/UploadProducts";
+import { createCategory } from "@/services/categoriesService";
+import { CategoryRequest } from "@/models/category";
 
 export const Products = () => {
   const [page, setPage] = useState(1);
@@ -57,7 +59,8 @@ export const Products = () => {
     limit
   );
   const { stats, statsLoading, fetchStats } = useProductStats();
-  const { categories, isLoadingCategories, fetchCategories } = useCategories();
+  const { categories, setCategories, isLoadingCategories, fetchCategories } =
+    useCategories();
   const { handleSearch, isSearching } = useProductSearch(setProducts);
 
   console.log("RERENDERING PRODUCTS");
@@ -182,6 +185,26 @@ export const Products = () => {
     }
   };
 
+  const handleCreateCategory = async (category: CategoryRequest) => {
+    console.log("Creating category:", category);
+
+    try {
+      const newCategory = await createCategory(category);
+      setCategories((prev) => [
+        ...prev,
+        {
+          _id: newCategory._id,
+          name: newCategory.name,
+          description: newCategory.description,
+        },
+      ]);
+      toast.success("Category created successfully");
+    } catch (error) {
+      console.error("Error creating category:", error);
+      toast.error("Error creating category");
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -216,6 +239,7 @@ export const Products = () => {
             categories={categories}
             onSubmit={handleCreateProduct}
             isLoadingCategories={isLoadingCategories}
+            onCreateCategory={handleCreateCategory}
           />
         </section>
         {loading ? (

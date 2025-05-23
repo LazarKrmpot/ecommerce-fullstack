@@ -2,7 +2,6 @@ import { Ref, getModelForClass, prop } from '@typegoose/typegoose';
 import { Document } from 'api/types/document.types';
 import { Expose, Transform } from 'class-transformer';
 import {
-  IsArray,
   IsBoolean,
   IsEnum,
   IsMongoId,
