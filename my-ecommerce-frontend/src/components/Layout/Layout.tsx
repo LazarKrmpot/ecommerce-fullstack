@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import Header from "../Header";
+import Header from "../Header/Header";
 import { Toaster } from "sonner";
 
 interface LayoutProps {
@@ -8,12 +8,12 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = () => {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main>
+      <main className="flex-grow">
         <Outlet />
       </main>
-      <footer className="bg-gray-800 text-white py-6">
+      <footer className="bg-gray-800 text-white py-6 mt-auto">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">

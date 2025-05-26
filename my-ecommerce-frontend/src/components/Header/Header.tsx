@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/authStore";
+import { useAuthStore } from "../../store/authStore";
 import { Button } from "@/components/ui/button";
-import MobileMenu from "./Layout/MobileMenu";
+import MobileMenu from "../Layout/MobileMenu";
 import { User } from "@/models/user";
 import { ROUTES } from "@/constants/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Cart } from "./components/Cart";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -86,6 +87,9 @@ const Header = () => {
                 >
                   Profile
                 </Link>
+
+                <Cart />
+
                 <Button
                   variant="outline"
                   onClick={handleLogout}
