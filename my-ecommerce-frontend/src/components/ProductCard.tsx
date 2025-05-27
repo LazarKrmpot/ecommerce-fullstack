@@ -12,12 +12,26 @@ import {
 import { Badge } from "./ui/badge";
 import { Star } from "lucide-react";
 import { Separator } from "./ui/separator";
+import { useCartStore } from "@/store/cartStore";
+import { Button } from "./ui/button";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const addItem = useCartStore((state) => state.addItem);
+
+  const handleAddToCart = () => {
+    addItem({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      image: null, // Assuming you have an images array
+      stock: product.stock,
+    });
+  };
+
   const formattedPrice = `${product.currency} ${product.price}`;
   // Determine status color
   const getStatusColor = (status: string) => {
@@ -100,18 +114,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </CardContent>
         <Separator />
-        <CardFooter className="pt-4 flex items-center justify-between">
-          <div>
-            <p className="text-xl font-bold">{formattedPrice}</p>
-            <p className="text-xs text-muted-foreground">
-              {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
-            </p>
-          </div>
-          <button className="cursor-pointer rounded-md bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90">
-            Add to Cart
-          </button>
-        </CardFooter>
       </Link>
+      <CardFooter className="pt-4 flex items-center justify-between">
+        <div>
+          <p className="text-xl font-bold">{formattedPrice}</p>
+          <p className="text-xs text-muted-foreground">
+            {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+          </p>
+        </div>
+        <Button
+          onClick={handleAddToCart}
+          disabled={product.stock === 0}
+          className="cursor-pointer rounded-md bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+        >
+          Add to Cart
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

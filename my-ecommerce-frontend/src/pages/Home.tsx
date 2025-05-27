@@ -36,7 +36,7 @@ const Home: React.FC = () => {
         <div className="relative w-full h-screen overflow-hidden">
           <img
             src={bannerImage}
-            alt="Xtream Moto Shop Banner"
+            alt="Xtreme Moto Shop Banner"
             className="w-full h-full object-cover"
           />
           <img
@@ -47,7 +47,7 @@ const Home: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
           <div className="absolute bottom-16 left-0 right-0 flex flex-col items-center justify-center text-white p-8 space-y-4">
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight animate-fade-in">
-              Welcome to Xtream Moto Shop
+              Welcome to Xtreme Moto Shop
             </h1>
             <h2 className="text-2xl md:text-3xl font-semibold tracking-wider text-red-400 animate-slide-up">
               SUN'S SHINING, YOU'RE RIDING

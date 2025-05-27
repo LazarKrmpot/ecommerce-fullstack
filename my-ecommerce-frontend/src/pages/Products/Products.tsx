@@ -35,7 +35,7 @@ const Products: React.FC = () => {
         )}
       </section>
       {/* Error Message */}
-      {products?.data.length === 0 && (
+      {!loading && products?.data.length === 0 && (
         <div className="container mx-auto px-4 text-red-600 font-bold">
           No products found.
         </div>
