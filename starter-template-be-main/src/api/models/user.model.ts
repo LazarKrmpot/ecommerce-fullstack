@@ -1,7 +1,13 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 import { Document } from 'api/types/document.types';
-import { Expose } from 'class-transformer';
-import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { Expose, Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import Container from 'typedi';
 
 export enum Roles {
@@ -10,6 +16,40 @@ export enum Roles {
 }
 
 export type RoleType = `${Roles}`;
+
+export class DeliveryAddressInfo {
+  @Expose()
+  @prop({ type: Boolean, required: true })
+  public isPrimary: boolean;
+
+  @Expose()
+  @prop({ type: String, required: true })
+  public address: string;
+
+  @Expose()
+  @prop({ type: String, required: true })
+  public city: string;
+
+  @Expose()
+  @prop({ type: String, required: true })
+  public state: string;
+
+  @Expose()
+  @prop({ type: Number, required: true })
+  public zipcode: number;
+
+  @Expose()
+  @prop({ type: String, required: true })
+  public country: string;
+
+  @Expose()
+  @prop({ type: Number, required: true })
+  public postalCode: number;
+
+  @Expose()
+  @prop({ type: String, required: true })
+  public phoneNumber: string;
+}
 export class User extends Document {
   @Expose()
   @IsString()
@@ -26,6 +66,12 @@ export class User extends Document {
   @IsOptional()
   @prop({ type: String, select: false })
   public password: string;
+
+  @Expose()
+  @ValidateNested({ each: true })
+  @Type(() => DeliveryAddressInfo)
+  @prop({ type: () => [DeliveryAddressInfo], default: [], _id: false })
+  public deliveryAddresses: DeliveryAddressInfo[];
 
   @Expose()
   @IsEnum(Roles)

@@ -1,5 +1,11 @@
 import { OmitType, PickType } from '@nestjs/swagger';
 import { Ref } from '@typegoose/typegoose';
+import { Order, OrderedItems } from 'api/models/order.model';
+import { Product, ProductStatus } from 'api/models/product.model';
+import { Shop } from 'api/models/shop.model';
+import { Roles, User } from 'api/models/user.model';
+import { OrderService } from 'api/services/order.service';
+import { ProductService } from 'api/services/product.service';
 import { Exclude, Type } from 'class-transformer';
 import { IsOptional, ValidateNested } from 'class-validator';
 import {
@@ -12,13 +18,6 @@ import {
   Post,
   Put,
 } from 'routing-controllers';
-
-import { Order, OrderedItems } from 'api/models/order.model';
-import { Product, ProductStatus } from 'api/models/product.model';
-import { Shop } from 'api/models/shop.model';
-import { Roles, User } from 'api/models/user.model';
-import { OrderService } from 'api/services/order.service';
-import { ProductService } from 'api/services/product.service';
 
 class PutOrderBody extends PickType(Order, ['status']) {
   @Exclude()
@@ -41,7 +40,7 @@ export class OrderedItemsType extends OmitType(OrderedItems, ['productId']) {
 export class OrderType extends OmitType(Order, [
   'orderedByUser',
   'orderedItems',
-  'orderedFromShop',
+  'shopId',
 ]) {
   @ValidateNested()
   @Type(() => User)
@@ -53,12 +52,14 @@ export class OrderType extends OmitType(Order, [
 
   @ValidateNested()
   @Type(() => Shop)
-  orderedFromShop: Shop;
+  @IsOptional()
+  shopId?: Shop;
 }
 
 export class CreateOrder extends PickType(Order, [
-  'orderedFromShop',
+  'shopId',
   'orderedItems',
+  'deliveryAddress',
 ]) {
   @Exclude()
   @IsOptional()
@@ -114,12 +115,12 @@ export class OrderController {
   @Authorized(Roles.ADMIN)
   public async getOrdersByShop(@Param('id') id: Ref<Shop>) {
     const orders = await this.orderService.find({
-      filter: { orderedFromShop: id },
+      filter: { shopId: id },
       populate: [
         'orderedByUser',
         'orderedItems.productId',
         { path: 'orderedItems.productId', populate: { path: 'shopId' } },
-        'orderedFromShop',
+        'shopId',
       ],
       Model: OrderType,
     });
@@ -130,23 +131,31 @@ export class OrderController {
   }
 
   @Post('/')
-  // @Authorized(Object.values(Roles))
+  @Authorized(Object.values(Roles))
   public async createOrder(
     @CurrentUser() user: User,
     @Body() body: CreateOrder,
   ) {
-    const { orderedItems, orderedFromShop } = body;
+    const { orderedItems, deliveryAddress, shopId } = body;
 
     const products = await Promise.all(
       orderedItems.map((item) =>
-        this.productService.findOneById(item.productId),
+        this.productService.findOne({
+          filter: { _id: item.productId },
+        }),
       ),
     );
 
     const OutOfStockItems: Product[] = [];
 
     const outOfStock = orderedItems.some((orderedItem) => {
-      const product = products.find((p) => p._id === orderedItem.productId);
+      const product = products.find(
+        (p) => p?._id?.toString() === orderedItem.productId?.toString(),
+      );
+
+      if (!product) {
+        throw new Error(`Product with ID ${orderedItem.productId} not found`);
+      }
 
       if (product.stock < orderedItem.quantity) {
         OutOfStockItems.push(product);
@@ -163,23 +172,16 @@ export class OrderController {
         message: `The following items are out of stock: ${outOfStockNames}. Please check your order and try again.`,
       };
     }
+
     products.forEach((product) => {
       const orderedItem = orderedItems.find(
-        (item) => item.productId === product._id,
+        (item) => item.productId?.toString() === product?._id?.toString(),
       );
       const newStock = product.stock - orderedItem.quantity;
 
       this.productService.updateOneById(product._id, {
         stock: newStock,
         ...(newStock === 0 && { status: ProductStatus.OUTOFSTOCK }),
-      });
-    });
-    products.forEach((product) => {
-      const orderedItem = orderedItems.find(
-        (item) => item.productId === product._id,
-      );
-      this.productService.updateOneById(product._id, {
-        stock: product.stock - orderedItem.quantity,
       });
     });
 
@@ -192,15 +194,17 @@ export class OrderController {
     const orderItems = products.map((product) => {
       return {
         productId: product._id,
-        quantity: orderedItems.find((item) => item.productId === product._id)
-          .quantity,
+        quantity: orderedItems.find(
+          (item) => item.productId?.toString() === product?._id?.toString(),
+        ).quantity,
       };
     });
 
     await this.orderService.create({
       orderedByUser: user._id,
-      orderedFromShop,
+      shopId,
       orderedItems: orderItems,
+      deliveryAddress,
       priceToPay,
     });
 

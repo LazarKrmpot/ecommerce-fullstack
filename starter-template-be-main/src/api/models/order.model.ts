@@ -1,15 +1,20 @@
 import { Ref, getModelForClass, prop } from '@typegoose/typegoose';
+import { Document } from 'api/types/document.types';
 import { Expose, Transform, Type } from 'class-transformer';
-import { IsEnum, IsMongoId, IsNumber, ValidateNested } from 'class-validator';
+import {
+  IsEnum,
+  IsMongoId,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { SchemaTypes } from 'mongoose';
 import Container from 'typedi';
-
-import { Document } from 'api/types/document.types';
 import { transformMongoId } from 'utils/class-transformers/transformMongoId';
 
 import { Product } from './product.model';
 import { Shop } from './shop.model';
-import { User } from './user.model';
+import { DeliveryAddressInfo, User } from './user.model';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -40,10 +45,17 @@ export class Order extends Document {
   public orderedByUser: Ref<User>;
 
   @Expose()
+  @prop({ type: DeliveryAddressInfo, required: true })
+  @ValidateNested()
+  @Type(() => DeliveryAddressInfo)
+  public deliveryAddress: DeliveryAddressInfo;
+
+  @Expose()
   @IsMongoId()
+  @IsOptional()
   @Transform(transformMongoId)
   @prop({ type: SchemaTypes.ObjectId, ref: 'Shop' })
-  public orderedFromShop: Ref<Shop>;
+  public shopId?: Ref<Shop>;
 
   @Expose()
   @ValidateNested({ each: true })
@@ -51,6 +63,7 @@ export class Order extends Document {
   @prop({ type: () => [OrderedItems], required: true, _id: false })
   public orderedItems: OrderedItems[];
 
+  @Expose()
   @Expose()
   @IsEnum(OrderStatus)
   @prop({

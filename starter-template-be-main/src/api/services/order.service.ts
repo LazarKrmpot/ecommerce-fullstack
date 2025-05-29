@@ -1,7 +1,6 @@
+import { Order } from 'api/models/order.model';
 import { Model } from 'mongoose';
 import { Inject, Service } from 'typedi';
-
-import { Order } from 'api/models/order.model';
 import { CRUD } from 'utils/models/CRUD';
 
 @Service()

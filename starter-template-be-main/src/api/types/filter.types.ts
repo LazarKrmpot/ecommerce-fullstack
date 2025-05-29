@@ -1,7 +1,6 @@
 import { ClassConstructor, Expose, Transform, Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { FilterQuery } from 'mongoose';
-
 import { transformDefaultValue } from 'utils/class-transformers/transformDefaultValue';
 
 export class FilterQueryParams<T> {

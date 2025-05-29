@@ -5,7 +5,7 @@ import MobileMenu from "../Layout/MobileMenu";
 import { User } from "@/models/user";
 import { ROUTES } from "@/constants/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Cart } from "./components/Cart";
+import { Cart } from "./components/Cart/Cart";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -118,11 +118,14 @@ const Header = () => {
           </div>
           {/* Mobile menu button */}
           {isMobile && (
-            <MobileMenu
-              isActive={isActive}
-              user={user as User}
-              onLogout={handleLogout}
-            />
+            <div className="flex space-x-2">
+              <Cart />
+              <MobileMenu
+                isActive={isActive}
+                user={user as User}
+                onLogout={handleLogout}
+              />
+            </div>
           )}
         </div>
 

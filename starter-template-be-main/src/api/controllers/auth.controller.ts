@@ -1,10 +1,11 @@
-import { Roles, User } from 'api/models/user.model';
+import { DeliveryAddressInfo, Roles, User } from 'api/models/user.model';
 import { UserService } from 'api/services/user.service';
 import bcrypt from 'bcryptjs';
 import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -36,6 +37,29 @@ class PostUserBody {
   @IsOptional()
   @IsString()
   public role: Roles;
+}
+
+export class CreateDeliveryAddress {
+  @IsString()
+  address: string;
+
+  @IsString()
+  city: string;
+
+  @IsString()
+  state: string;
+
+  @IsNumber()
+  zipcode: number;
+
+  @IsString()
+  country: string;
+
+  @IsNumber()
+  postalCode: number;
+
+  @IsString()
+  phoneNumber: string;
 }
 
 class PostUserLoginBody {
@@ -99,6 +123,46 @@ export class AuthController {
     const { email, password } = body;
     const token = await this.userService.login(email, password);
     return { token };
+  }
+
+  @Post('/createAddress')
+  @Authorized(Object.values(Roles))
+  public async createDeliveryAddress(
+    @CurrentUser() user: User,
+    @Body() body: CreateDeliveryAddress,
+  ) {
+    const { address, city, state, zipcode, country, postalCode, phoneNumber } = body;
+
+    // Get the current user with their addresses
+    const currentUser = await this.userService.findOneById(user._id);
+    const userAddresses = currentUser?.deliveryAddresses || [];
+
+    if (userAddresses.length >= 3) {
+      return {
+        message: 'You can only have a maximum of 3 delivery addresses.',
+      };
+    }
+
+    const newAddress: DeliveryAddressInfo = {
+      isPrimary: userAddresses.length === 0, // Make first address primary
+      address,
+      city,
+      state,
+      zipcode,
+      country,
+      postalCode,
+      phoneNumber,
+    };
+
+    // Update the user with the new address
+    await this.userService.updateOneById(user._id, {
+      deliveryAddresses: [...userAddresses, newAddress],
+    });
+
+    return {
+      message: 'Delivery address created successfully',
+      data: newAddress,
+    };
   }
 
   @Get('/me')
