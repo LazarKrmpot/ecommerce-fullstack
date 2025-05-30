@@ -1,6 +1,6 @@
 // src/routes/protectedRoutes.tsx
 import { RouteObject } from "react-router-dom";
-import Profile from "@/pages/Profile";
+import Profile from "@/pages/Profile/Profile";
 import Dashboard from "@/pages/admin/Dashboard";
 import { ROUTES } from "@/constants/routes";
 import RouteGuard from "@/guards/RouteGuard";

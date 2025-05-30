@@ -17,7 +17,7 @@ export enum Roles {
 
 export type RoleType = `${Roles}`;
 
-export class DeliveryAddressInfo {
+export class DeliveryAddressInfo extends Document {
   @Expose()
   @prop({ type: Boolean, required: true })
   public isPrimary: boolean;
@@ -70,7 +70,7 @@ export class User extends Document {
   @Expose()
   @ValidateNested({ each: true })
   @Type(() => DeliveryAddressInfo)
-  @prop({ type: () => [DeliveryAddressInfo], default: [], _id: false })
+  @prop({ type: () => [DeliveryAddressInfo], default: [], _id: true })
   public deliveryAddresses: DeliveryAddressInfo[];
 
   @Expose()

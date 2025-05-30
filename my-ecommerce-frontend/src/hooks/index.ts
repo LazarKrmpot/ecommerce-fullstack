@@ -4,3 +4,4 @@ export * from "./products/useProductsData";
 export * from "./products/useProductStats";
 export * from "./users/useUsersData";
 export * from "./products/useFeaturedProducts";
+export * from "./userProfile/useUserProfile";

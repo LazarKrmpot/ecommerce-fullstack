@@ -3,6 +3,21 @@ export interface User {
   name: string;
   email: string;
   role: "user" | "admin";
+  createdAt: string;
+  updatedAt: string;
+  deliveryAddresses?: DeliveryAddress[];
+}
+
+export interface DeliveryAddress {
+  _id: string;
+  isPrimary: boolean;
+  address: string;
+  city: string;
+  state: string;
+  zipcode: number;
+  country: string;
+  postalCode: number;
+  phoneNumber: string;
 }
 
 export interface UserResponse {

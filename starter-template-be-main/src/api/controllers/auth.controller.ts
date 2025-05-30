@@ -3,6 +3,7 @@ import { UserService } from 'api/services/user.service';
 import bcrypt from 'bcryptjs';
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNumber,
@@ -40,6 +41,9 @@ class PostUserBody {
 }
 
 export class CreateDeliveryAddress {
+  @IsBoolean()
+  isPrimary: boolean;
+
   @IsString()
   address: string;
 
@@ -131,7 +135,8 @@ export class AuthController {
     @CurrentUser() user: User,
     @Body() body: CreateDeliveryAddress,
   ) {
-    const { address, city, state, zipcode, country, postalCode, phoneNumber } = body;
+    const { address, city, state, zipcode, country, postalCode, phoneNumber } =
+      body;
 
     // Get the current user with their addresses
     const currentUser = await this.userService.findOneById(user._id);
@@ -143,25 +148,30 @@ export class AuthController {
       };
     }
 
-    const newAddress: DeliveryAddressInfo = {
-      isPrimary: userAddresses.length === 0, // Make first address primary
-      address,
-      city,
-      state,
-      zipcode,
-      country,
-      postalCode,
-      phoneNumber,
-    };
+    // Create new address
+    const newAddress = new DeliveryAddressInfo();
+    newAddress.isPrimary = userAddresses.length === 0; // Make first address primary
+    newAddress.address = address;
+    newAddress.city = city;
+    newAddress.state = state;
+    newAddress.zipcode = zipcode;
+    newAddress.country = country;
+    newAddress.postalCode = postalCode;
+    newAddress.phoneNumber = phoneNumber;
 
     // Update the user with the new address
     await this.userService.updateOneById(user._id, {
-      deliveryAddresses: [...userAddresses, newAddress],
+      $push: { deliveryAddresses: newAddress },
     });
 
+    // Get updated user to return the new address with its ID
+    const updatedUser = await this.userService.findOneById(user._id);
+    const addedAddress =
+      updatedUser.deliveryAddresses[updatedUser.deliveryAddresses.length - 1];
+
     return {
-      message: 'Delivery address created successfully',
-      data: newAddress,
+      message: 'Address added successfully',
+      data: addedAddress,
     };
   }
 
