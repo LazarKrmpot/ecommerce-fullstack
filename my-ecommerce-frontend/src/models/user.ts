@@ -8,6 +8,8 @@ export interface User {
   deliveryAddresses?: DeliveryAddress[];
 }
 
+export type DeliveryAddressPost = Omit<DeliveryAddress, "_id">;
+
 export interface DeliveryAddress {
   _id: string;
   isPrimary: boolean;

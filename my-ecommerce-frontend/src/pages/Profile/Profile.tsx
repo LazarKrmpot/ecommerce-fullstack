@@ -1,6 +1,6 @@
-import { useUserProfile } from "@/hooks";
+import { useUserAddress, useUserProfile } from "@/hooks";
 import UserInfo from "./components/UserInfo";
-import AddressList from "./components/AddressList";
+import AddressList from "./components/Address/AddressList";
 import { useEffect } from "react";
 import { UserInfoSkeleton } from "./components/SkeletonLoaders/UserInfoSkeleton";
 import { AddressListSkeleton } from "./components/SkeletonLoaders/AddressListSkeleton";
@@ -8,43 +8,14 @@ import { OrderListSkeleton } from "./components/SkeletonLoaders/OrderListSkeleto
 
 const Profile = () => {
   const { user, fetchUserProfile, loading } = useUserProfile();
-  // const { updateUserProfile } = useAuthStore();
-  // const [user, setUserState] = useState<User | null>(null);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState("");
-  // const [isEditing, setIsEditing] = useState(false);
-  // const [formData, setFormData] = useState({
-  //   name: "",
-  //   email: "",
-  // });
-
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       const userData = await getCurrentUser();
-  //       setUserState(userData);
-  //       setFormData({
-  //         name: userData.name,
-  //         email: userData.email,
-  //       });
-  //     } catch (err) {
-  //       setError("Failed to load profile data");
-  //       console.error(err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchUserData();
-  // }, []);
+  const { createAddress, updateAddress, deleteAddress, setPrimaryAddress } =
+    useUserAddress();
 
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
   const handleEditUser = () => {};
-  const handleEditAddress = () => {};
-  const handleAddAddress = () => {};
 
   if (loading) {
     return (
@@ -63,8 +34,10 @@ const Profile = () => {
           <UserInfo user={user} onEdit={handleEditUser} />
           <AddressList
             addresses={user.deliveryAddresses || []}
-            onEditAddress={handleEditAddress}
-            onAddAddress={handleAddAddress}
+            createAddress={createAddress}
+            updateAddress={updateAddress}
+            deleteAddress={deleteAddress}
+            setPrimaryAddress={setPrimaryAddress}
           />
           {/* <OrderList orders={user.orders || []} /> */}
         </>

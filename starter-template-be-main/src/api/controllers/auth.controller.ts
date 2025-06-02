@@ -1,12 +1,10 @@
-import { DeliveryAddressInfo, Roles, User } from 'api/models/user.model';
+import { Roles, User } from 'api/models/user.model';
 import { UserService } from 'api/services/user.service';
 import bcrypt from 'bcryptjs';
 import { Type } from 'class-transformer';
 import {
-  IsBoolean,
   IsEmail,
   IsEnum,
-  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -38,32 +36,6 @@ class PostUserBody {
   @IsOptional()
   @IsString()
   public role: Roles;
-}
-
-export class CreateDeliveryAddress {
-  @IsBoolean()
-  isPrimary: boolean;
-
-  @IsString()
-  address: string;
-
-  @IsString()
-  city: string;
-
-  @IsString()
-  state: string;
-
-  @IsNumber()
-  zipcode: number;
-
-  @IsString()
-  country: string;
-
-  @IsNumber()
-  postalCode: number;
-
-  @IsString()
-  phoneNumber: string;
 }
 
 class PostUserLoginBody {
@@ -127,52 +99,6 @@ export class AuthController {
     const { email, password } = body;
     const token = await this.userService.login(email, password);
     return { token };
-  }
-
-  @Post('/createAddress')
-  @Authorized(Object.values(Roles))
-  public async createDeliveryAddress(
-    @CurrentUser() user: User,
-    @Body() body: CreateDeliveryAddress,
-  ) {
-    const { address, city, state, zipcode, country, postalCode, phoneNumber } =
-      body;
-
-    // Get the current user with their addresses
-    const currentUser = await this.userService.findOneById(user._id);
-    const userAddresses = currentUser?.deliveryAddresses || [];
-
-    if (userAddresses.length >= 3) {
-      return {
-        message: 'You can only have a maximum of 3 delivery addresses.',
-      };
-    }
-
-    // Create new address
-    const newAddress = new DeliveryAddressInfo();
-    newAddress.isPrimary = userAddresses.length === 0; // Make first address primary
-    newAddress.address = address;
-    newAddress.city = city;
-    newAddress.state = state;
-    newAddress.zipcode = zipcode;
-    newAddress.country = country;
-    newAddress.postalCode = postalCode;
-    newAddress.phoneNumber = phoneNumber;
-
-    // Update the user with the new address
-    await this.userService.updateOneById(user._id, {
-      $push: { deliveryAddresses: newAddress },
-    });
-
-    // Get updated user to return the new address with its ID
-    const updatedUser = await this.userService.findOneById(user._id);
-    const addedAddress =
-      updatedUser.deliveryAddresses[updatedUser.deliveryAddresses.length - 1];
-
-    return {
-      message: 'Address added successfully',
-      data: addedAddress,
-    };
   }
 
   @Get('/me')

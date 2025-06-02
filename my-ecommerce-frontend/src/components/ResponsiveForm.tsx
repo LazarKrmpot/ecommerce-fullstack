@@ -27,7 +27,9 @@ interface ResponsiveFormProps {
   handleOpenDialog?: () => void;
   isOpen?: boolean;
   classNames?: string;
+  disabled?: boolean;
 }
+
 export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
   title,
   description,
@@ -37,13 +39,14 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
   handleOpenDialog,
   isOpen = false,
   classNames = "",
+  disabled = false,
 }) => {
   const isMobile = useIsMobile();
 
   if (!isMobile) {
     return (
       <Dialog open={isOpen} onOpenChange={handleOpenDialog}>
-        <DialogTrigger asChild>
+        <DialogTrigger asChild disabled={disabled}>
           {customTrigger ? (
             customTrigger
           ) : (
@@ -51,6 +54,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+              disabled={disabled}
             >
               {triggerIcon}
             </Button>
@@ -70,7 +74,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
   }
   return (
     <Drawer open={isOpen} onOpenChange={handleOpenDialog}>
-      <DrawerTrigger asChild>
+      <DrawerTrigger asChild disabled={disabled}>
         {customTrigger ? (
           customTrigger
         ) : (
@@ -78,6 +82,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
             variant="outline"
             size="icon"
             className="h-8 w-8 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+            disabled={disabled}
           >
             {triggerIcon}
           </Button>

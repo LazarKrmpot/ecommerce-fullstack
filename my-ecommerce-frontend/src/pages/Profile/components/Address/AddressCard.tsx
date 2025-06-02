@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Edit } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DeliveryAddress } from "@/models/user";
 
@@ -10,13 +10,16 @@ interface AddressCardProps {
   onEdit: (address: DeliveryAddress) => void;
   className?: string;
   onSetPrimary: (id: string) => () => void;
+  disabled?: boolean;
+  children?: React.ReactNode;
 }
 
 const AddressCard: React.FC<AddressCardProps> = ({
   address,
-  onEdit,
   className,
   onSetPrimary,
+  disabled,
+  children,
 }) => {
   const {
     isPrimary,
@@ -28,16 +31,25 @@ const AddressCard: React.FC<AddressCardProps> = ({
     phoneNumber,
   } = address;
 
+  const handleCardClick = useCallback(() => {
+    if (!disabled && !isPrimary) {
+      onSetPrimary(address._id)();
+    }
+  }, [disabled, isPrimary, address._id, onSetPrimary]);
+
   return (
     <Card
-      onClick={onSetPrimary(address._id)}
       className={cn(
-        "relative transition-all duration-300 hover:shadow-md",
+        "relative transition-all duration-100 hover:shadow-md gap-0",
         isPrimary ? "outline-red-600 outline-solid" : "",
+        disabled && "opacity-50 cursor-not-allowed",
         className
       )}
     >
-      <CardContent className="">
+      <CardContent
+        onClick={handleCardClick}
+        className={cn(!isPrimary && !disabled && "cursor-pointer", "pb-5")}
+      >
         <div className="flex flex-col-reverse items-start space-x-2 mb-4">
           <div className="flex items-start space-x-2 text-left">
             <MapPin className="h-5 w-5 text-slate-500 mt-0.5 flex-shrink-0" />
@@ -52,9 +64,7 @@ const AddressCard: React.FC<AddressCardProps> = ({
 
           {isPrimary && (
             <div className="pb-2 w-full flex justify-end sm:absolute sm:top-2 sm:right-2">
-              <Badge variant="outline" className="animate-fade-in">
-                Primary
-              </Badge>
+              <Badge variant="outline">Primary</Badge>
             </div>
           )}
         </div>
@@ -65,14 +75,8 @@ const AddressCard: React.FC<AddressCardProps> = ({
         </div>
       </CardContent>
 
-      <CardFooter className="border-t pt-4">
-        <button
-          onClick={() => onEdit(address)}
-          className="flex items-center text-sm text-slate-600 hover:text-slate-900 transition-colors"
-        >
-          <Edit className="h-4 w-4 mr-1" />
-          Edit Address
-        </button>
+      <CardFooter className="border-t pt-4 flex justify-between">
+        {children}
       </CardFooter>
     </Card>
   );

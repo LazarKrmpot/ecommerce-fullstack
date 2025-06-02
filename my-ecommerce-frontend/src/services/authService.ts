@@ -1,3 +1,4 @@
+import { DeliveryAddress, DeliveryAddressPost } from "@/models/user";
 import api from "./api";
 import axios from "axios";
 
@@ -8,6 +9,7 @@ interface LoginResponse {
     name: string;
     email: string;
     role: string;
+    deliveryAddresses?: DeliveryAddress[];
   };
 }
 
@@ -47,6 +49,7 @@ export const login = async (email: string, password: string) => {
         name: userData.data.name,
         email: userData.data.email,
         role: userData.data.role,
+        deliveryAddresses: userData.data.deliveryAddresses || [],
       },
     };
 
@@ -91,6 +94,7 @@ export const register = async (
         name: userData.data.name,
         email: userData.data.email,
         role: userData.data.role,
+        deliveryAddresses: userData.data.deliveryAddresses || [],
       },
     };
     return response;
@@ -135,4 +139,29 @@ export const updateProfile = async (profileData: UpdateProfileData) => {
 export const logout = () => {
   localStorage.removeItem("token");
   // Optionally, you can also clear user data from the state management library (like Redux or Context API)
+};
+
+export const addAddress = async (address: DeliveryAddressPost) => {
+  try {
+    const { data } = await api.post("/auth/createAddress", address);
+
+    const authStorage = localStorage.getItem("auth-storage");
+    console.log("Add address response:", data);
+    console.log("Auth storage before update:", authStorage);
+
+    if (authStorage) {
+      const parsed = JSON.parse(authStorage);
+      if (parsed.state && parsed.state.user) {
+        parsed.state.user.deliveryAddresses.push(data.data);
+        localStorage.setItem("auth-storage", JSON.stringify(parsed));
+      }
+    }
+    return data.data;
+  } catch (error) {
+    console.error("Add address error:", error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.message || "Failed to add address");
+    }
+    throw error;
+  }
 };
