@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/table";
 
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 
 import { CreateProductPayload, UpdateProductPayload } from "@/models/product";
 import { Input } from "@/components/ui/input";
@@ -29,6 +28,7 @@ import { ProductStats } from "./components/ProductStats";
 import DeleteProduct from "./components/DeleteProduct";
 import { SearchIcon } from "lucide-react";
 import { CreateProductForm } from "./components/CreateProductForm";
+import { ProductsTableSkeleton } from "./components/ProductsTableSkeleton";
 import {
   useCategories,
   useProductsData,
@@ -243,11 +243,7 @@ export const Products = () => {
           />
         </section>
         {loading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
+          <ProductsTableSkeleton />
         ) : (
           <Table>
             <TableHeader>

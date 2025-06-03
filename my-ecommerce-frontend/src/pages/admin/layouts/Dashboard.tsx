@@ -1,4 +1,4 @@
-import { Sidebar } from "./components/Sidebar/Sidebar";
+import { Sidebar } from "../shared/components/Sidebar/Sidebar";
 
 import { AdminRoutes } from "@/routes/adminRoutes";
 import { FC } from "react";

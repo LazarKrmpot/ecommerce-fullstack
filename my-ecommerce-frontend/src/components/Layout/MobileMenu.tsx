@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User } from "@/models/user";
 import { ROUTES } from "@/constants/routes";
-import { menuItems } from "@/pages/admin/components/Sidebar/sidebarMenuItems";
+import { menuItems } from "@/pages/admin/shared/components/Sidebar/sidebarMenuItems";
 import { cn } from "@/lib/utils";
 import {
   Drawer,
