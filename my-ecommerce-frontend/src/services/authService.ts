@@ -1,4 +1,4 @@
-import { DeliveryAddress, DeliveryAddressPost } from "@/models/user";
+import { DeliveryAddress, UserPut } from "@/models/user";
 import api from "./api";
 import axios from "axios";
 
@@ -13,10 +13,20 @@ interface LoginResponse {
   };
 }
 
-interface UpdateProfileData {
-  name: string;
-  email: string;
-}
+const updateLocalStorage = (user: LoginResponse["user"]) => {
+  const authStorage = localStorage.getItem("auth-storage");
+  if (authStorage) {
+    const parsed = JSON.parse(authStorage);
+    if (parsed.state && parsed.state.user) {
+      parsed.state.user = {
+        ...parsed.state.user,
+        ...user,
+        deliveryAddresses: user.deliveryAddresses || [],
+      };
+      localStorage.setItem("auth-storage", JSON.stringify(parsed));
+    }
+  }
+};
 
 export const login = async (email: string, password: string) => {
   try {
@@ -117,13 +127,10 @@ export const getCurrentUser = async () => {
   }
 };
 
-export const updateProfile = async (profileData: UpdateProfileData) => {
+export const updateProfile = async (profileData: UserPut) => {
   try {
-    // First update the profile
-    await api.put("/auth/me", profileData);
-
-    // Then fetch the updated user data
-    const { data } = await api.get("/auth/me");
+    const { data } = await api.put("/auth/me", profileData);
+    updateLocalStorage(data.data);
     return data.data;
   } catch (error) {
     console.error("Update profile error:", error);
@@ -137,31 +144,5 @@ export const updateProfile = async (profileData: UpdateProfileData) => {
 };
 
 export const logout = () => {
-  localStorage.removeItem("token");
-  // Optionally, you can also clear user data from the state management library (like Redux or Context API)
-};
-
-export const addAddress = async (address: DeliveryAddressPost) => {
-  try {
-    const { data } = await api.post("/auth/createAddress", address);
-
-    const authStorage = localStorage.getItem("auth-storage");
-    console.log("Add address response:", data);
-    console.log("Auth storage before update:", authStorage);
-
-    if (authStorage) {
-      const parsed = JSON.parse(authStorage);
-      if (parsed.state && parsed.state.user) {
-        parsed.state.user.deliveryAddresses.push(data.data);
-        localStorage.setItem("auth-storage", JSON.stringify(parsed));
-      }
-    }
-    return data.data;
-  } catch (error) {
-    console.error("Add address error:", error);
-    if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.message || "Failed to add address");
-    }
-    throw error;
-  }
+  localStorage.clear();
 };

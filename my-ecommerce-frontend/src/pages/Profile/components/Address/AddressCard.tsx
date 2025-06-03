@@ -7,7 +7,6 @@ import { DeliveryAddress } from "@/models/user";
 
 interface AddressCardProps {
   address: DeliveryAddress;
-  onEdit: (address: DeliveryAddress) => void;
   className?: string;
   onSetPrimary: (id: string) => () => void;
   disabled?: boolean;

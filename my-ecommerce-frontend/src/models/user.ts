@@ -10,6 +10,16 @@ export interface User {
 
 export type DeliveryAddressPost = Omit<DeliveryAddress, "_id">;
 
+export interface UpdateUserPayload {
+  name?: string;
+  email?: string;
+  role?: "user" | "admin";
+}
+
+export interface UserPut {
+  name?: string;
+  email?: string;
+}
 export interface DeliveryAddress {
   _id: string;
   isPrimary: boolean;
@@ -29,10 +39,4 @@ export interface UserResponse {
     limit: 0;
     total: 0;
   };
-}
-
-export interface UpdateUserPayload {
-  _id: string;
-  name?: string;
-  email?: string;
 }

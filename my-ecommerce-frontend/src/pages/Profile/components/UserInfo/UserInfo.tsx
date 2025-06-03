@@ -1,15 +1,29 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Mail, Calendar, Award, Edit } from "lucide-react";
-import { User as UserInterface } from "@/models/user";
+import { User, Mail, Calendar, Award } from "lucide-react";
+import { User as UserInterface, UserPut } from "@/models/user";
+import { EditUserInfo } from "./EditUserInfo";
+import { toast } from "sonner";
+import { updateProfile } from "@/services/authService";
 
 interface UserInfoProps {
   user: UserInterface;
-  onEdit: () => void;
+  setUser: (user: UserInterface) => void;
 }
 
-const UserInfo: React.FC<UserInfoProps> = ({ user, onEdit }) => {
+const UserInfo: React.FC<UserInfoProps> = ({ user, setUser }) => {
   const { name, email, role, createdAt, updatedAt } = user;
+
+  const onEditUserInfo = async (userInfo: UserPut) => {
+    try {
+      const updatedUser = await updateProfile(userInfo);
+      setUser(updatedUser);
+      toast.success("User info updated successfully!");
+    } catch (error) {
+      console.error("Error updating user info:", error);
+      toast.error("Failed to update user info. Please try again.");
+    }
+  };
 
   return (
     <Card className="mb-5 overflow-hidden pt-0 gap-3">
@@ -29,13 +43,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, onEdit }) => {
           <p className="text-slate-500 text-left italic">{role}</p>
         </div>
 
-        <button
-          onClick={onEdit}
-          className="flex items-center text-sm font-medium text-slate-700 hover:text-red-600 transition-colors group"
-        >
-          <Edit className="h-5 w-5 mr-2 group-hover:text-red-600 transition-colors" />
-          <span className="hidden sm:block">Edit Profile</span>
-        </button>
+        <EditUserInfo user={user} onEditUserInfo={onEditUserInfo} />
       </div>
       <CardContent className="grid text-left grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
         <div className="space-y-4">

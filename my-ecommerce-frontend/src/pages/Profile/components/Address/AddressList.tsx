@@ -106,20 +106,22 @@ const AddressList: React.FC<AddressListProps> = ({
             {displayedAddresses.length > 0 &&
               `(${displayedAddresses.length} / 3)`}
           </h2>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <InfoIcon
-                className="h-5 w-5 text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
-                aria-label="Address information"
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-sm">
-                You can add up to 3 delivery addresses. Set one as primary for
-                faster checkout.
-              </p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="hidden sm:block">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <InfoIcon
+                  className="h-5 w-5 text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                  aria-label="Address information"
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-sm">
+                  You can add up to 3 delivery addresses. Set one as primary for
+                  faster checkout.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         <AddAddressForm
@@ -137,7 +139,6 @@ const AddressList: React.FC<AddressListProps> = ({
           <AddressCard
             key={address._id}
             address={address}
-            onEdit={() => {}} // We'll handle edit through EditAddressFor
             onSetPrimary={handleSetPrimary}
             className={
               address.isPrimary

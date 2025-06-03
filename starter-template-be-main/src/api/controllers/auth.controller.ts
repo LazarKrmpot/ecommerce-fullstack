@@ -122,6 +122,11 @@ export class AuthController {
       role,
     });
 
-    return { message: 'User updated' };
+    const updatedUser = await this.userService.findOneById(user, user._id);
+
+    return {
+      data: updatedUser,
+      message: 'User updated successfully',
+    };
   }
 }
