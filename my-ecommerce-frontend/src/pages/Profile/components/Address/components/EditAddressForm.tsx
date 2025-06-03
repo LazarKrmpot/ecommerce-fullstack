@@ -1,38 +1,35 @@
-import { DeliveryAddressPost } from "@/models/user";
+import { DeliveryAddress, DeliveryAddressPost } from "@/models/user";
 import { useState } from "react";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { ResponsiveForm } from "@/components/ResponsiveForm";
-import { PlusCircle } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-interface AddAddressFormProps {
-  onAddAddress: (address: DeliveryAddressPost) => Promise<void>;
+import { Edit } from "lucide-react";
+
+interface EditAddressFormProps {
+  address: DeliveryAddress;
+  onEditAddress: (
+    addressId: string,
+    address: DeliveryAddressPost
+  ) => Promise<void>;
   disabled?: boolean;
 }
 
-export const AddAddressForm = ({
-  onAddAddress,
+export const EditAddressForm = ({
+  address,
+  onEditAddress,
   disabled,
-}: AddAddressFormProps) => {
-  const [formData, setFormData] = useState<DeliveryAddressPost>({
-    address: "",
-    city: "",
-    state: "",
-    zipcode: 0,
-    country: "",
-    postalCode: 0,
-    phoneNumber: "",
-    isPrimary: false,
-  });
-
+}: EditAddressFormProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  //   const isMobile = useIsMobile();
+  const [formData, setFormData] = useState<DeliveryAddressPost>({
+    address: address.address,
+    city: address.city,
+    state: address.state,
+    zipcode: address.zipcode,
+    country: address.country,
+    postalCode: address.postalCode,
+    phoneNumber: address.phoneNumber,
+    isPrimary: address.isPrimary,
+  });
 
   const toggleDialog = () => {
     setIsOpen((prev) => !prev);
@@ -40,23 +37,16 @@ export const AddAddressForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitted Address:", formData);
     try {
-      await onAddAddress(formData);
-      setFormData({
-        address: "",
-        city: "",
-        state: "",
-        zipcode: 0,
-        country: "",
-        postalCode: 0,
-        phoneNumber: "",
-        isPrimary: false,
-      });
+      const updatedAddress = {
+        ...formData,
+        isPrimary: address.isPrimary,
+      };
+      await onEditAddress(address._id, updatedAddress);
+      toggleDialog();
     } catch (error) {
-      console.error("Error adding address:", error);
+      console.error("Error editing address:", error);
     }
-    toggleDialog();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,30 +60,13 @@ export const AddAddressForm = ({
     }));
   };
 
-  const trigger = disabled ? (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          className="flex items-center text-sm font-medium text-slate-700 opacity-50 cursor-not-allowed"
-          disabled={disabled}
-        >
-          <PlusCircle className="h-6 w-6 mr-2" />
-          <span className="hidden sm:inline">Add New Address</span>
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p className="text-sm">
-          Delete one of your existing addresses to add a new one.
-        </p>
-      </TooltipContent>
-    </Tooltip>
-  ) : (
+  const trigger = (
     <button
-      className="flex items-center text-sm font-medium text-slate-700 hover:text-red-600 transition-colors group"
-      // onClick={toggleDialog}
+      className="flex items-center text-sm text-slate-600 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-600"
+      disabled={disabled}
     >
-      <PlusCircle className="h-6 w-6 mr-2 group-hover:text-red-600 transition-colors" />
-      <span className="hidden sm:inline">Add New Address</span>
+      <Edit className="h-4 w-4 mr-1" />
+      Edit Address
     </button>
   );
 
@@ -101,10 +74,9 @@ export const AddAddressForm = ({
     <ResponsiveForm
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
-      title="Add New Address"
-      description="Please fill in the details of your new delivery address."
+      title="Edit Address"
+      description="Update your delivery address details."
       customTrigger={trigger}
-      disabled={disabled}
     >
       <form onSubmit={handleSubmit}>
         <div className="grid gap-4 py-4">
@@ -202,7 +174,7 @@ export const AddAddressForm = ({
           className="inline-flex w-full md:w-fit items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
           disabled={disabled}
         >
-          Add Address
+          Save Changes
         </button>
       </form>
     </ResponsiveForm>

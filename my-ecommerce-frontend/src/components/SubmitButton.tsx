@@ -7,6 +7,7 @@ interface SubmitButtonProps {
   isLoading?: boolean;
   disabled?: boolean;
   customClassName?: string;
+  onSubmit?: () => void;
 }
 
 export const SubmitButton: React.FC<SubmitButtonProps> = ({
@@ -14,6 +15,7 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
   isLoading = false,
   disabled = false,
   customClassName = "",
+  onSubmit = () => {},
 }) => {
   return (
     <Button
@@ -23,8 +25,10 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
         "transition-all duration-200",
         isLoading && "opacity-50",
         disabled && "pointer-events-none opacity-50",
-        customClassName
+        customClassName,
+        "w-full sm:w-fit"
       )}
+      onClick={onSubmit}
     >
       {isLoading ? (
         <span className="flex items-center gap-2">

@@ -107,11 +107,11 @@ export function CsvFormatGuide() {
           </Table>
         </div>
 
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex sm:justify-end">
           <Button
             onClick={downloadSampleCsv}
             variant="outline"
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto"
           >
             <Download className="h-4 w-4" />
             Download Sample CSV

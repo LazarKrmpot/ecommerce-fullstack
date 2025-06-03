@@ -1,3 +1,4 @@
+import { SubmitButton } from "@/components/SubmitButton";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -230,7 +231,7 @@ export function CsvUploader({ onUpload, isLoading }: CsvUploaderProps) {
               </div>
               <div>
                 <p className="font-medium mb-1">CSV file is valid!</p>
-                <div className="flex items-center gap-2 justify-center text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row mt-4 items-center gap-2 justify-center text-sm text-muted-foreground">
                   <span>{file?.name}</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground"></span>
                   <span>{formatFileSize(file?.size || 0)}</span>
@@ -260,49 +261,24 @@ export function CsvUploader({ onUpload, isLoading }: CsvUploaderProps) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between flex-col-reverse gap-4 sm:flex-row sm:justify-end">
         <Button
           variant="outline"
           onClick={resetUploader}
           disabled={status === "idle" || status === "checking"}
+          className="w-full sm:w-fit"
         >
           Reset
         </Button>
-        {isLoading ? (
-          <span className="flex items-center gap-2">
-            <svg
-              className="h-4 w-4 animate-spin"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Saving
-          </span>
-        ) : (
-          <Button
-            onClick={handleUpload}
-            disabled={status !== "valid"}
-            className={cn(
-              status === "valid" && "bg-green-600 hover:bg-green-700"
-            )}
-          >
-            Upload Products
-          </Button>
-        )}
+        <SubmitButton
+          label="Upload Products"
+          isLoading={isLoading}
+          disabled={status !== "valid"}
+          onSubmit={handleUpload}
+          customClassName={cn(
+            status === "valid" && "bg-green-600 hover:bg-green-700"
+          )}
+        />
       </CardFooter>
     </Card>
   );

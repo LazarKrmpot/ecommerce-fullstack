@@ -297,6 +297,7 @@ export const Products = () => {
                       <DeleteProduct
                         id={product._id}
                         onDelete={handleDeleteProduct}
+                        isFeatured={product.isFeatured}
                       />
                     </TableCell>
                   </TableRow>

@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { InfoIcon } from "lucide-react";
-import AddressCard from "./AddressCard";
+import AddressCard from "./components/AddressCard";
 import { DeliveryAddress, DeliveryAddressPost } from "@/models/user";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AddAddressForm } from "./AddAddressForm";
-import { EditAddressForm } from "./EditAddressForm";
-import DeleteAddress from "./DeleteAddress";
+import { AddAddressForm } from "./components/AddAddressForm";
+import { EditAddressForm } from "./components/EditAddressForm";
+import DeleteAddress from "./components/DeleteAddress";
 
 interface AddressListProps {
   addresses: DeliveryAddress[];
