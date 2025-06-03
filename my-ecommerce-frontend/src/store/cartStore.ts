@@ -159,15 +159,21 @@ export const useCartStore = create<CartState>()(
     {
       name: "cart-storage",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        items: state.items,
-        totalItems: state.totalItems,
-        subtotal: state.subtotal,
-        shipping: state.shipping,
-        total: state.total,
-      }),
+      partialize: (state) => {
+        // Only persist if there are items in the cart
+        if (state.items.length === 0) {
+          return {};
+        }
+        return {
+          items: state.items,
+          totalItems: state.totalItems,
+          subtotal: state.subtotal,
+          shipping: state.shipping,
+          total: state.total,
+        };
+      },
       onRehydrateStorage: () => (state) => {
-        if (state) {
+        if (state && state.items.length > 0) {
           const totals = calculateTotals(state.items);
           state.totalItems = totals.totalItems;
           state.subtotal = totals.subtotal;

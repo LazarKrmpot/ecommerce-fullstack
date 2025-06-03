@@ -54,6 +54,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           authLogout();
           set({ user: null, loading: false });
+          window.location.reload();
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : "Logout failed",
