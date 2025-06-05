@@ -2,22 +2,27 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Undo2, X } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
 import CartItem from "./components/CartItem";
 import CheckoutForm from "./components/CheckoutForm";
+import CartHeader from "./components/CartHeader";
 
 export interface CheckoutFormData {
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
   address: string;
   city: string;
   state: string;
-  zipCode: string;
+  zipcode: number;
   country: string;
+  postalCode: number;
+  phoneNumber: string;
 }
+
+export type CartStep = "cart" | "address" | "confirmation";
 
 export function Cart() {
   const {
@@ -31,16 +36,27 @@ export function Cart() {
     shipping,
     total,
   } = useCartStore();
-  const [step, setStep] = useState<"cart" | "checkout">("cart");
+
+  const cartSteps: Record<number, CartStep> = {
+    0: "cart",
+    1: "address",
+    2: "confirmation",
+  };
+
+  const [stepIndex, setStepIndex] = useState(0);
+  const step = cartSteps[stepIndex];
+
   const [formData, setFormData] = useState<CheckoutFormData>({
+    email: "",
     firstName: "",
     lastName: "",
-    email: "",
     address: "",
     city: "",
     state: "",
-    zipCode: "",
+    zipcode: 0,
     country: "",
+    postalCode: 0,
+    phoneNumber: "",
   });
 
   useEffect(() => {
@@ -69,12 +85,14 @@ export function Cart() {
     }));
   };
 
-  const handleBackToCart = () => {
-    setStep("cart");
+  const handleNextStep = () => {
+    setStepIndex((prev) =>
+      Math.min(prev + 1, Object.keys(cartSteps).length - 1)
+    );
   };
 
-  const handleCheckout = () => {
-    setStep("checkout");
+  const handlePreviousStep = () => {
+    setStepIndex((prev) => Math.max(prev - 1, 0));
   };
 
   return (
@@ -110,25 +128,12 @@ export function Cart() {
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b px-6 h-16">
-            <div className="flex items-center gap-4">
-              <h2 className="text-lg font-semibold">Shopping Cart</h2>
-              <span className="text-sm text-muted-foreground">
-                {totalItems} item{totalItems !== 1 ? "s" : ""}
-              </span>
-            </div>
-            {step === "cart" && (
-              <Button variant="ghost" size="icon" onClick={toggleCart}>
-                <X className="h-5 w-5" />
-              </Button>
-            )}
-            {step === "checkout" && (
-              <Button variant="ghost" size="icon" onClick={handleBackToCart}>
-                <Undo2 className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-
+          <CartHeader
+            handlePreviousStep={handlePreviousStep}
+            toggleCart={toggleCart}
+            totalItems={totalItems}
+            step={step}
+          />
           <div className="flex flex-1 flex-col gap-6 p-6 overflow-hidden">
             {items.length === 0 ? (
               <div className="flex flex-1 items-center justify-center">
@@ -147,7 +152,7 @@ export function Cart() {
                       />
                     ))}
 
-                  {step === "checkout" && (
+                  {step === "address" && (
                     <CheckoutForm
                       formData={formData}
                       onInputChange={handleInputChange}
@@ -173,7 +178,7 @@ export function Cart() {
                   </div>
                   {step === "cart" ? (
                     <Button
-                      onClick={handleCheckout}
+                      onClick={handleNextStep}
                       className="w-full"
                       disabled={totalItems === 0}
                     >
