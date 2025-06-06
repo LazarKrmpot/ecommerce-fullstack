@@ -23,13 +23,12 @@ const CartHeader: React.FC<CartHeaderProps> = ({
           {totalItems} item{totalItems !== 1 ? "s" : ""}
         </span>
       </div>
-      {step === "cart" && (
-        <Button variant="ghost" size="icon" onClick={toggleCart}>
+      {step === "cart" ? (
+        <Button variant="outline" size="icon" onClick={toggleCart}>
           <X className="h-5 w-5" />
         </Button>
-      )}
-      {step === "address" && (
-        <Button variant="ghost" size="icon" onClick={handlePreviousStep}>
+      ) : (
+        <Button variant="outline" size="icon" onClick={handlePreviousStep}>
           <Undo2 className="h-5 w-5" />
         </Button>
       )}

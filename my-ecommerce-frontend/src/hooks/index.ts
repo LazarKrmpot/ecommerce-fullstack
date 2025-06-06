@@ -6,3 +6,4 @@ export * from "./users/useUsersData";
 export * from "./products/useFeaturedProducts";
 export * from "./userProfile/useUserProfile";
 export * from "./userAddress/useUserAddress";
+export * from "./cart/useCartSummary";
