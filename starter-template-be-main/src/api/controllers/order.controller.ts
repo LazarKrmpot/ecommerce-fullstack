@@ -1,229 +1,257 @@
-import { OmitType, PickType } from '@nestjs/swagger';
+import { OmitType } from '@nestjs/swagger';
 import { Ref } from '@typegoose/typegoose';
-import { Order, OrderedItems } from 'api/models/order.model';
-import { Product, ProductStatus } from 'api/models/product.model';
-import { Shop } from 'api/models/shop.model';
-import { Roles, User } from 'api/models/user.model';
+import { Category } from 'api/models/category.model';
+import {
+  Order,
+  OrderDeliveryAddress,
+  OrderedItem,
+} from 'api/models/order.model';
+import { Product } from 'api/models/product.model';
+import { DeliveryAddressInfo, Roles, User } from 'api/models/user.model';
+import { CategoryService } from 'api/services/category.service';
 import { OrderService } from 'api/services/order.service';
 import { ProductService } from 'api/services/product.service';
-import { Exclude, Type } from 'class-transformer';
-import { IsOptional, ValidateNested } from 'class-validator';
+import { FilterQueryParams } from 'api/types/filter.types';
+import { Exclude, Expose, Type, plainToInstance } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { each } from 'lodash';
 import {
   Authorized,
   Body,
   CurrentUser,
   Get,
   JsonController,
-  Param,
   Post,
-  Put,
+  QueryParams,
 } from 'routing-controllers';
+import { ResponseSchema } from 'routing-controllers-openapi';
 
-class PutOrderBody extends PickType(Order, ['status']) {
+export class CreateOrderBody {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderedItem)
+  orderedItems: OrderedItem[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => OrderDeliveryAddress)
+  deliveryAddress?: OrderDeliveryAddress;
+
+  @IsOptional()
+  @IsBoolean()
+  usePrimaryAddress?: boolean;
+}
+
+class UserResponse extends OmitType(User, [
+  '__v',
+  'password',
+  'deliveryAddresses',
+]) {
   @Exclude()
   @IsOptional()
   protected_: null;
+
+  @Exclude()
+  __v: number;
+
+  @Exclude()
+  password: string;
+
+  @Exclude()
+  deliveryAddresses: DeliveryAddressInfo[];
+
+  @Exclude()
+  createdAt: Date;
+
+  @Exclude()
+  updatedAt: Date;
 }
 
-export class ProductType extends OmitType(Product, ['shopId']) {
+class ProductWithCategory extends OmitType(Product, ['__v', 'categoryId']) {
+  @Exclude()
+  @IsOptional()
+  protected_: null;
+
   @ValidateNested()
-  @Type(() => Shop)
-  shopId: Shop;
+  @Type(() => Category)
+  categoryId: Category;
 }
 
-export class OrderedItemsType extends OmitType(OrderedItems, ['productId']) {
+class PopulatedOrderedItem extends OmitType(OrderedItem, ['productId']) {
+  @Exclude()
+  @IsOptional()
+  protected_: null;
+
+  @Type(() => ProductWithCategory)
   @ValidateNested()
-  @Type(() => ProductType)
-  productId: ProductType;
+  productId: ProductWithCategory;
 }
 
-export class OrderType extends OmitType(Order, [
-  'orderedByUser',
-  'orderedItems',
-  'shopId',
-]) {
+class OrderType extends OmitType(Order, ['orderedItems', 'orderedByUser']) {
+  @Exclude()
+  @IsOptional()
+  protected_: null;
+
   @ValidateNested()
-  @Type(() => User)
-  orderedByUser: User;
+  @Type(() => UserResponse)
+  orderedByUser: UserResponse;
 
   @ValidateNested({ each: true })
-  @Type(() => OrderedItemsType)
-  orderedItems: OrderedItemsType[];
+  @Type(() => PopulatedOrderedItem)
+  orderedItems: PopulatedOrderedItem[];
+}
 
+class OrdersResponse {
+  @ValidateNested({ each: true })
+  @Type(() => OrderType)
+  data: OrderType[];
+
+  @Type(() => FilterQueryParams)
   @ValidateNested()
-  @Type(() => Shop)
-  @IsOptional()
-  shopId?: Shop;
+  meta: FilterQueryParams<OrderType[]>;
+
+  @IsString()
+  message: string;
 }
 
-export class CreateOrder extends PickType(Order, [
-  'shopId',
-  'orderedItems',
-  'deliveryAddress',
-]) {
-  @Exclude()
-  @IsOptional()
-  protected_: null;
-}
 @JsonController('/orders')
 export class OrderController {
   constructor(
     private orderService: OrderService,
     private productService: ProductService,
+    private categoryService: CategoryService,
   ) {}
-
-  @Get('/')
-  @Authorized(Roles.ADMIN)
-  public async getAllOrders() {
-    const orders = await this.orderService.find({
-      populate: [
-        'orderedByUser',
-        'orderedItems.productId',
-        { path: 'orderedItems.productId', populate: { path: 'shopId' } },
-        'orderedFromShop',
-      ],
-      Model: OrderType,
-    });
-    if (orders.length === 0) {
-      return { message: 'No orders found' };
-    }
-    return { data: orders };
-  }
-
-  @Get('/my-orders')
-  @Authorized(Object.values(Roles))
-  public async getMyOrders(@CurrentUser() user: User) {
-    const order = await this.orderService.find({
-      filter: { orderedByUser: user._id },
-      populate: [
-        'orderedByUser',
-        'orderedItems.productId',
-        { path: 'orderedItems.productId', populate: { path: 'shopId' } },
-        'orderedFromShop',
-      ],
-      Model: OrderType,
-    });
-
-    if (order.length === 0) {
-      return { message: 'No orders found' };
-    }
-
-    return { data: order };
-  }
-
-  @Get('/by-shop/:id')
-  @Authorized(Roles.ADMIN)
-  public async getOrdersByShop(@Param('id') id: Ref<Shop>) {
-    const orders = await this.orderService.find({
-      filter: { shopId: id },
-      populate: [
-        'orderedByUser',
-        'orderedItems.productId',
-        { path: 'orderedItems.productId', populate: { path: 'shopId' } },
-        'shopId',
-      ],
-      Model: OrderType,
-    });
-    if (orders.length === 0) {
-      return { message: 'No orders found for this shop' };
-    }
-    return { data: orders };
-  }
 
   @Post('/')
   @Authorized(Object.values(Roles))
   public async createOrder(
+    @Body() body: CreateOrderBody,
     @CurrentUser() user: User,
-    @Body() body: CreateOrder,
   ) {
-    const { orderedItems, deliveryAddress, shopId } = body;
+    const { orderedItems, deliveryAddress, usePrimaryAddress } = body;
 
-    const products = await Promise.all(
-      orderedItems.map((item) =>
-        this.productService.findOne({
-          filter: { _id: item.productId },
-        }),
-      ),
-    );
+    let finalDeliveryAddress: OrderDeliveryAddress;
 
-    const OutOfStockItems: Product[] = [];
-
-    const outOfStock = orderedItems.some((orderedItem) => {
-      const product = products.find(
-        (p) => p?._id?.toString() === orderedItem.productId?.toString(),
+    if (usePrimaryAddress) {
+      // Find primary delivery address from user's addresses
+      const primaryAddress = user.deliveryAddresses?.find(
+        (addr) => addr.isPrimary,
       );
-
-      if (!product) {
-        throw new Error(`Product with ID ${orderedItem.productId} not found`);
+      if (!primaryAddress) {
+        throw new Error('No primary delivery address found for user');
       }
 
-      if (product.stock < orderedItem.quantity) {
-        OutOfStockItems.push(product);
-        return true;
-      }
-      return false;
-    });
-
-    if (outOfStock) {
-      const outOfStockNames = OutOfStockItems.map((item) => item.name).join(
-        ', ',
-      );
-      return {
-        message: `The following items are out of stock: ${outOfStockNames}. Please check your order and try again.`,
+      finalDeliveryAddress = {
+        firstName: user.name.split(' ')[0],
+        lastName: user.name.split(' ').slice(1).join(' '),
+        email: user.email,
+        address: primaryAddress.address,
+        city: primaryAddress.city,
+        state: primaryAddress.state,
+        zipcode: primaryAddress.zipcode,
+        country: primaryAddress.country,
+        postalCode: primaryAddress.postalCode,
+        phoneNumber: primaryAddress.phoneNumber,
       };
+    } else if (deliveryAddress) {
+      finalDeliveryAddress = deliveryAddress;
+    } else {
+      throw new Error(
+        'Either delivery address or usePrimaryAddress flag must be provided',
+      );
     }
 
-    products.forEach((product) => {
-      const orderedItem = orderedItems.find(
-        (item) => item.productId?.toString() === product?._id?.toString(),
-      );
-      const newStock = product.stock - orderedItem.quantity;
-
-      this.productService.updateOneById(product._id, {
-        stock: newStock,
-        ...(newStock === 0 && { status: ProductStatus.OUTOFSTOCK }),
-      });
-    });
-
-    const priceToPay = products.reduce(
-      (total, product, index) =>
-        total + product.price * orderedItems[index].quantity,
-      0,
-    );
-
-    const orderItems = products.map((product) => {
-      return {
-        productId: product._id,
-        quantity: orderedItems.find(
-          (item) => item.productId?.toString() === product?._id?.toString(),
-        ).quantity,
-      };
-    });
+    // Calculate total price
+    let totalPrice = 0;
+    for (const item of orderedItems) {
+      const product = await this.productService.findOneById(item.productId);
+      if (!product) {
+        throw new Error(`Product with id ${item.productId} not found`);
+      }
+      totalPrice += product.price * item.quantity;
+    }
 
     await this.orderService.create({
-      orderedByUser: user._id,
-      shopId,
-      orderedItems: orderItems,
-      deliveryAddress,
-      priceToPay,
+      orderedItems,
+      deliveryAddress: finalDeliveryAddress,
+      priceToPay: totalPrice,
+      orderedByUser: user?._id,
     });
 
     return { message: 'Order created successfully' };
   }
 
-  @Put('/:id')
+  @Get('/')
   @Authorized(Roles.ADMIN)
-  public async updateOrder(
-    @Param('id') id: Ref<Order>,
-    @Body() body: PutOrderBody,
+  @ResponseSchema(OrdersResponse)
+  public async getAllOrders(
+    @QueryParams() QueryParams: FilterQueryParams<Order[]>,
   ) {
-    const { status } = body;
-    const existing = await this.orderService.findOneById(id);
-    if (!existing) {
-      return { message: 'Order not found' };
-    }
-    await this.orderService.updateOneById(id, { status });
+    const { limit, page, sort, filter } = plainToInstance(
+      FilterQueryParams,
+      QueryParams,
+    );
 
-    return { message: 'Order updated successfully' };
+    const { data: orders, meta } = await this.orderService.filter({
+      limit,
+      page,
+      sort,
+      filter,
+      populate: [
+        {
+          path: 'orderedByUser',
+          Model: 'users',
+          type: 'single',
+        },
+      ],
+
+      Model: OrderType,
+    });
+
+    await Promise.all(
+      orders.map(async (order) => {
+        await Promise.all(
+          order.orderedItems?.map(async (item) => {
+            const product = await this.productService.findOneById(
+              item.productId,
+            );
+            if (product) {
+              if (product.categoryId) {
+                const category = await this.categoryService.findOneById(
+                  product.categoryId,
+                );
+                product.categoryId = category;
+              }
+            }
+
+            item.productId = product;
+          }),
+        );
+      }),
+    );
+
+    if (!orders.length) {
+      return {
+        data: [],
+        meta: {
+          page,
+          limit,
+          total: 0,
+        },
+        message: 'No orders found',
+      };
+    }
+
+    return {
+      data: orders,
+      meta,
+      message: 'Orders retrieved successfully',
+    };
   }
 }

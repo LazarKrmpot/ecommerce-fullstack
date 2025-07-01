@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -13,12 +13,15 @@ import { CheckoutFormData, validateAddressForm } from "./utils/formValidate";
 import { useCartSummary, ShippingMethod } from "@/hooks/cart/useCartSummary";
 import ConfirmOrder from "./components/ConfirmOrder/ConfirmOrder";
 import CheckoutForm from "./components/CheckoutForm/CheckoutForm";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export type CartStep = "cart" | "address" | "confirmation";
 
 export function Cart() {
   const { items, isOpen, toggleCart, removeItem, updateQuantity } =
     useCartStore();
+
+  const isMobile = useIsMobile();
 
   const { subtotal, totalItems, getShippingCost, calculateTotal } =
     useCartSummary();
@@ -51,6 +54,16 @@ export function Cart() {
     postalCode: 0,
     phoneNumber: "",
   });
+
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+    document.body.style.overflow = "";
+  }, [isMobile, isOpen]);
 
   const authStorage = localStorage.getItem("auth-storage");
   const primaryAddress = useMemo(() => {
@@ -233,7 +246,6 @@ export function Cart() {
                       shippingMethod={selectedShippingMethod}
                       onShippingMethodChange={setSelectedShippingMethod}
                       subtotal={subtotal}
-                      shippingCost={getShippingCost(selectedShippingMethod)}
                       total={calculateTotal(selectedShippingMethod)}
                     />
                   )}

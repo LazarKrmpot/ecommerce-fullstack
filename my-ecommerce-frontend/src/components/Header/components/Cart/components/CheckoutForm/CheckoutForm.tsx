@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { DeliveryAddress } from "@/models/user";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import PrimaryAddressCard from "../PrimaryAddressCard";
+import PrimaryAddressCard from "./PrimaryAddressCard";
 import { CheckoutFormData } from "../../utils/formValidate";
 
 interface CheckoutFormInterface {
@@ -221,7 +221,7 @@ const CheckoutForm: React.FC<CheckoutFormInterface> = ({
                 id="postalCode"
                 name="postalCode"
                 type="number"
-                value={postalCode}
+                value={postalCode || ""}
                 onChange={onInputChange}
                 placeholder="Enter your postal code"
                 className={errors.postalCode ? "border-red-500" : ""}
@@ -241,7 +241,7 @@ const CheckoutForm: React.FC<CheckoutFormInterface> = ({
               id="phoneNumber"
               name="phoneNumber"
               type="tel"
-              value={phoneNumber}
+              value={phoneNumber || ""}
               onChange={onInputChange}
               placeholder="Enter your phone number"
               className={errors.phoneNumber ? "border-red-500" : ""}

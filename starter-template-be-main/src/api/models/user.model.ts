@@ -2,8 +2,10 @@ import { getModelForClass, prop } from '@typegoose/typegoose';
 import { Document } from 'api/types/document.types';
 import { Expose, Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -19,34 +21,42 @@ export type RoleType = `${Roles}`;
 
 export class DeliveryAddressInfo extends Document {
   @Expose()
+  @IsBoolean()
   @prop({ type: Boolean, required: true })
   public isPrimary: boolean;
 
   @Expose()
+  @IsString()
   @prop({ type: String, required: true })
   public address: string;
 
   @Expose()
+  @IsString()
   @prop({ type: String, required: true })
   public city: string;
 
   @Expose()
+  @IsString()
   @prop({ type: String, required: true })
   public state: string;
 
   @Expose()
+  @IsNumber()
   @prop({ type: Number, required: true })
   public zipcode: number;
 
   @Expose()
+  @IsString()
   @prop({ type: String, required: true })
   public country: string;
 
   @Expose()
+  @IsNumber()
   @prop({ type: Number, required: true })
   public postalCode: number;
 
   @Expose()
+  @IsString()
   @prop({ type: String, required: true })
   public phoneNumber: string;
 }

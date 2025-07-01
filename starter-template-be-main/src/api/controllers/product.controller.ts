@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Ref } from '@typegoose/typegoose';
 import { Category } from 'api/models/category.model';
 import { Currency, Product, ProductStatus } from 'api/models/product.model';
@@ -8,8 +8,13 @@ import { Shop } from 'api/models/shop.model';
 import { Roles } from 'api/models/user.model';
 import { ProductService } from 'api/services/product.service';
 import { FilterQueryParams } from 'api/types/filter.types';
-import { Exclude, Type, plainToInstance } from 'class-transformer';
-import { IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Exclude, Expose, Type, plainToInstance } from 'class-transformer';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import csv from 'csv-parser';
 import {
   Authorized,
@@ -28,11 +33,11 @@ import { ResponseSchema } from 'routing-controllers-openapi';
 export class ProductType extends OmitType(Product, ['shopId', 'categoryId']) {
   @ValidateNested()
   @Type(() => Shop)
-  shopId: Shop;
+  shopId: Ref<Shop>;
 
   @ValidateNested()
   @Type(() => Category)
-  categoryId: Category;
+  categoryId: Ref<Category>;
 }
 
 class createProductBody extends OmitType(Product, ['__v', '_id']) {
@@ -43,47 +48,48 @@ class createProductBody extends OmitType(Product, ['__v', '_id']) {
 class getAllProductsByShopResponse {
   @ValidateNested()
   @Type(() => Product)
-  public data: Product;
+  public data: Ref<Product>;
+}
+
+class ProductStatsType {
+  @Expose()
+  @IsNumber()
+  totalProducts: number;
+
+  @Expose()
+  @IsNumber()
+  totalFeatured: number;
+
+  @Expose()
+  @IsNumber()
+  totalInStock: number;
+
+  @Expose()
+  @IsNumber()
+  totalOutOfStock: number;
 }
 
 class ProductStatsResponse {
   @ValidateNested()
-  @Type(() => Object)
-  data: {
-    totalProducts: number;
-    totalFeatured: number;
-    totalInStock: number;
-    totalOutOfStock: number;
-  };
+  @Type(() => ProductStatsType)
+  public data: ProductStatsType;
 }
 
-class SearchQueryParams {
+class SearchFilterQueryParams extends FilterQueryParams<Product> {
+  @Expose()
+  @IsOptional()
   @IsString()
-  search: string;
-
-  @IsOptional()
-  limit?: number;
-
-  @IsOptional()
-  page?: number;
-
-  @IsOptional()
-  sort?: string;
+  public search: string;
 }
 
 class SearchResponse {
   @ValidateNested({ each: true })
   @Type(() => ProductType)
-  data: ProductType[];
+  data: Ref<ProductType>[];
 
   @ValidateNested()
-  @Type(() => Object)
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  @Type(() => FilterQueryParams)
+  meta: FilterQueryParams<ProductType>;
 }
 
 @JsonController('/products')
@@ -148,7 +154,7 @@ export class ProductController {
   @Get('/search')
   @ResponseSchema(SearchResponse)
   public async searchProductsByLetter(
-    @QueryParams() queryParams: SearchQueryParams,
+    @QueryParams() queryParams: SearchFilterQueryParams,
   ) {
     const { search, limit = 10, page = 1, sort } = queryParams;
 
@@ -188,7 +194,6 @@ export class ProductController {
   }
 
   @Get('/category/:id')
-  // @Authorized(Object.values(Roles))
   @ResponseSchema(getAllProductsByShopResponse)
   public async getAllProductsByCategory(@Param('id') id: Ref<Category>) {
     const categoryProducts = await this.productService.find({

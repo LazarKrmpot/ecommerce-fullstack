@@ -5,7 +5,7 @@ import { DeliveryAddress } from "@/models/user";
 import { ShippingMethod } from "@/hooks/cart/useCartSummary";
 import { CartItem as CartItemModel } from "@/store/cartStore";
 import CartItem from "../CartItem";
-import PrimaryAddressCard from "../PrimaryAddressCard";
+import PrimaryAddressCard from "../CheckoutForm/PrimaryAddressCard";
 import { BoxIcon, MapPin, Truck } from "lucide-react";
 import { CheckoutFormData } from "../../utils/formValidate";
 import OrderAddress from "./components/OrderAddress";
@@ -35,7 +35,6 @@ interface ConfirmOrderProps {
   shippingMethod: ShippingMethod;
   onShippingMethodChange: (method: ShippingMethod) => void;
   subtotal: number;
-  shippingCost: number;
   total: number;
 }
 
@@ -45,7 +44,6 @@ const ConfirmOrder: React.FC<ConfirmOrderProps> = ({
   usePrimaryAddress,
   shippingMethod,
   onShippingMethodChange,
-  shippingCost,
 }) => {
   const renderAddress = () => {
     if (!selectedAddress) {
@@ -118,7 +116,6 @@ const ConfirmOrder: React.FC<ConfirmOrderProps> = ({
                   >
                     <span>{method.label}</span>
                     <div className="flex items-center justify-between w-full">
-                      <span>${shippingCost}</span>
                       <p className="text-sm text-muted-foreground">
                         {method.description}
                       </p>

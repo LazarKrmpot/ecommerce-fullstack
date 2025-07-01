@@ -2,10 +2,12 @@ import { Ref, getModelForClass, prop } from '@typegoose/typegoose';
 import { Document } from 'api/types/document.types';
 import { Expose, Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsMongoId,
   IsNumber,
   IsOptional,
+  IsString,
   ValidateNested,
 } from 'class-validator';
 import { SchemaTypes } from 'mongoose';
@@ -13,8 +15,7 @@ import Container from 'typedi';
 import { transformMongoId } from 'utils/class-transformers/transformMongoId';
 
 import { Product } from './product.model';
-import { Shop } from './shop.model';
-import { DeliveryAddressInfo, User } from './user.model';
+import { User } from './user.model';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -24,7 +25,7 @@ export enum OrderStatus {
   CANCELLED = 'cancelled',
 }
 
-export class OrderedItems {
+export class OrderedItem {
   @Expose()
   @IsMongoId()
   @Transform(transformMongoId)
@@ -37,33 +38,84 @@ export class OrderedItems {
   public quantity: number;
 }
 
+export class OrderDeliveryAddress {
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public firstName: string;
+
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public lastName: string;
+
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public email: string;
+
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public address: string;
+
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public city: string;
+
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public state: string;
+
+  @Expose()
+  @IsNumber()
+  @prop({ type: Number, required: true })
+  public zipcode: number;
+
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public country: string;
+
+  @Expose()
+  @IsNumber()
+  @prop({ type: Number, required: true })
+  public postalCode: number;
+
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public phoneNumber: string;
+}
+
 export class Order extends Document {
-  @Expose()
-  @IsMongoId()
-  @Transform(transformMongoId)
-  @prop({ type: SchemaTypes.ObjectId, ref: 'User' })
-  public orderedByUser: Ref<User>;
-
-  @Expose()
-  @prop({ type: DeliveryAddressInfo, required: true })
-  @ValidateNested()
-  @Type(() => DeliveryAddressInfo)
-  public deliveryAddress: DeliveryAddressInfo;
-
   @Expose()
   @IsMongoId()
   @IsOptional()
   @Transform(transformMongoId)
-  @prop({ type: SchemaTypes.ObjectId, ref: 'Shop' })
-  public shopId?: Ref<Shop>;
+  @prop({ type: SchemaTypes.ObjectId, ref: 'User' })
+  public orderedByUser?: Ref<User>;
+
+  @Expose()
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => OrderDeliveryAddress)
+  @prop({
+    type: () => OrderDeliveryAddress,
+    required: false,
+    _id: false,
+    default: null,
+  })
+  public deliveryAddress?: OrderDeliveryAddress;
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => OrderedItems)
-  @prop({ type: () => [OrderedItems], required: true, _id: false })
-  public orderedItems: OrderedItems[];
+  @Type(() => OrderedItem)
+  @prop({ type: () => [OrderedItem], required: true, _id: false })
+  public orderedItems: OrderedItem[];
 
-  @Expose()
   @Expose()
   @IsEnum(OrderStatus)
   @prop({
@@ -75,7 +127,7 @@ export class Order extends Document {
 
   @Expose()
   @IsNumber()
-  @prop({ type: Number })
+  @prop({ type: Number, required: true })
   public priceToPay: number;
 }
 

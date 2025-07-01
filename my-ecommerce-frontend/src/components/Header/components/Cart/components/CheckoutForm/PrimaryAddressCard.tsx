@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DeliveryAddress } from "@/models/user";
 import { MapPin, Phone } from "lucide-react";
 import React from "react";
-import { CheckoutFormData } from "../utils/formValidate";
+import { CheckoutFormData } from "../../utils/formValidate";
 
 interface PrimaryAddressCardProps {
   primaryAddress: DeliveryAddress | CheckoutFormData;

@@ -1,7 +1,10 @@
+import { OmitType } from '@nestjs/swagger';
 import { Ref } from '@typegoose/typegoose';
+import { OrderDeliveryAddress } from 'api/models/order.model';
 import { DeliveryAddressInfo, User } from 'api/models/user.model';
+import { Roles } from 'api/models/user.model';
 import { UserService } from 'api/services/user.service';
-import { Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
 import {
   Authorized,
@@ -14,7 +17,7 @@ import {
   Post,
   Put,
 } from 'routing-controllers';
-import { Roles } from 'api/models/user.model';
+import { ResponseSchema } from 'routing-controllers-openapi';
 
 export class CreateDeliveryAddress {
   @IsBoolean()
@@ -47,6 +50,7 @@ export class AddressController {
   constructor(private userService: UserService) {}
 
   @Get('/')
+  @ResponseSchema(CreateDeliveryAddress)
   @Authorized(Object.values(Roles))
   public async getAddresses(@CurrentUser() user: User) {
     const currentUser = await this.userService.findOneById(user._id);

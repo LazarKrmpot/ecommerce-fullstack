@@ -42,7 +42,6 @@ export class CategoryController {
   ) {}
 
   @Get('/')
-  // @Authorized(Roles.ADMIN)
   public async getAllCategories() {
     const categories = await this.categoriesService.find({});
     if (categories.length === 0) {
