@@ -32,6 +32,19 @@ export interface DeliveryAddress {
   phoneNumber: string;
 }
 
+export interface OrderDeliveryAddress {
+  firstName: string;
+  lastName: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zipcode: number;
+  country: string;
+  postalCode: number;
+  phoneNumber: string;
+}
+
 export interface UserResponse {
   data: User[];
   meta: {

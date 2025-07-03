@@ -1,4 +1,4 @@
-import { OmitType } from '@nestjs/swagger';
+import { OmitType, PickType } from '@nestjs/swagger';
 import { Ref } from '@typegoose/typegoose';
 import { Category } from 'api/models/category.model';
 import {
@@ -7,27 +7,31 @@ import {
   OrderedItem,
 } from 'api/models/order.model';
 import { Product } from 'api/models/product.model';
+import { Shop } from 'api/models/shop.model';
 import { DeliveryAddressInfo, Roles, User } from 'api/models/user.model';
 import { CategoryService } from 'api/services/category.service';
 import { OrderService } from 'api/services/order.service';
 import { ProductService } from 'api/services/product.service';
 import { FilterQueryParams } from 'api/types/filter.types';
-import { Exclude, Expose, Type, plainToInstance } from 'class-transformer';
+import { Exclude, Type, plainToInstance } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsMongoId,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { each } from 'lodash';
 import {
   Authorized,
   Body,
   CurrentUser,
+  Delete,
   Get,
   JsonController,
+  Param,
   Post,
+  Put,
   QueryParams,
 } from 'routing-controllers';
 import { ResponseSchema } from 'routing-controllers-openapi';
@@ -73,14 +77,56 @@ class UserResponse extends OmitType(User, [
   updatedAt: Date;
 }
 
-class ProductWithCategory extends OmitType(Product, ['__v', 'categoryId']) {
+class CategoryResponse extends OmitType(Category, ['__v']) {
   @Exclude()
   @IsOptional()
   protected_: null;
 
+  @Exclude()
+  createdAt: Date;
+
+  @Exclude()
+  updatedAt: Date;
+}
+
+class ProductWithCategory extends OmitType(Product, [
+  '__v',
+  'categoryId',
+  'status',
+  'status',
+  'isFeatured',
+  'currency',
+  'stock',
+  'shopId',
+]) {
+  @Exclude()
+  @IsOptional()
+  protected_: null;
+
+  @Exclude()
+  createdAt: Date;
+
+  @Exclude()
+  updatedAt: Date;
+
+  @Exclude()
+  status: string;
+
+  @Exclude()
+  isFeatured: boolean;
+
+  @Exclude()
+  currency: string;
+
+  @Exclude()
+  stock: number;
+
+  @Exclude()
+  shopId: Ref<Shop>;
+
   @ValidateNested()
-  @Type(() => Category)
-  categoryId: Category;
+  @Type(() => CategoryResponse)
+  categoryId: CategoryResponse;
 }
 
 class PopulatedOrderedItem extends OmitType(OrderedItem, ['productId']) {
@@ -107,6 +153,19 @@ class OrderType extends OmitType(Order, ['orderedItems', 'orderedByUser']) {
   orderedItems: PopulatedOrderedItem[];
 }
 
+class MyOderType extends OmitType(Order, ['orderedItems', 'orderedByUser']) {
+  @Exclude()
+  @IsOptional()
+  protected_: null;
+
+  @Exclude()
+  orderedByUser: Ref<User>;
+
+  @ValidateNested({ each: true })
+  @Type(() => PopulatedOrderedItem)
+  orderedItems: PopulatedOrderedItem;
+}
+
 class OrdersResponse {
   @ValidateNested({ each: true })
   @Type(() => OrderType)
@@ -120,6 +179,32 @@ class OrdersResponse {
   message: string;
 }
 
+class MyOrdersResponse {
+  @ValidateNested({ each: true })
+  @Type(() => MyOderType)
+  data: MyOderType[];
+
+  @Type(() => FilterQueryParams)
+  @ValidateNested()
+  meta: FilterQueryParams<MyOderType[]>;
+
+  @IsString()
+  message: string;
+}
+
+class UpdateOrderBody extends PickType(Order, ['status']) {
+  @Exclude()
+  @IsOptional()
+  protected _: null;
+}
+
+class UpdateOrderResponse {
+  @IsString()
+  message: string;
+
+  @IsMongoId()
+  data: Ref<Order>;
+}
 @JsonController('/orders')
 export class OrderController {
   constructor(
@@ -139,7 +224,6 @@ export class OrderController {
     let finalDeliveryAddress: OrderDeliveryAddress;
 
     if (usePrimaryAddress) {
-      // Find primary delivery address from user's addresses
       const primaryAddress = user.deliveryAddresses?.find(
         (addr) => addr.isPrimary,
       );
@@ -252,6 +336,113 @@ export class OrderController {
       data: orders,
       meta,
       message: 'Orders retrieved successfully',
+    };
+  }
+
+  @Get('/my-orders')
+  @Authorized(Object.values(Roles))
+  @ResponseSchema(MyOrdersResponse)
+  public async getMyOrders(
+    @CurrentUser() user: User,
+    @QueryParams() QueryParams: FilterQueryParams<Order[]>,
+  ) {
+    const { limit, page, sort, filter } = plainToInstance(
+      FilterQueryParams,
+      QueryParams,
+    );
+
+    console.log(filter);
+
+    const userFilterString = `orderedByUser::eq::${user._id}`;
+    const mergedFilter = filter
+      ? `${filter};${userFilterString}`
+      : userFilterString;
+
+    const { data: orders, meta } = await this.orderService.filter({
+      limit,
+      page,
+      sort,
+      filter: mergedFilter,
+      Model: MyOderType,
+    });
+
+    await Promise.all(
+      orders.map(async (order) => {
+        await Promise.all(
+          order.orderedItems?.map(async (item) => {
+            const product = await this.productService.findOneById(
+              item.productId,
+            );
+            if (product) {
+              if (product.categoryId) {
+                const category = await this.categoryService.findOneById(
+                  product.categoryId,
+                );
+
+                product.categoryId = category;
+              }
+            }
+            item.productId = product;
+          }),
+        );
+      }),
+    );
+
+    if (!orders.length) {
+      return {
+        data: [],
+        meta: {
+          page,
+          limit,
+          total: 0,
+        },
+        message: 'No orders found',
+      };
+    }
+
+    return {
+      data: orders,
+      meta,
+      message: 'Orders retrieved successfully',
+    };
+  }
+
+  @Put('/:id')
+  @Authorized(Roles.ADMIN)
+  @ResponseSchema(UpdateOrderResponse)
+  public async updateOrder(
+    @Param('id') id: Ref<Order>,
+    @Body() body: UpdateOrderBody,
+  ) {
+    const order = await this.orderService.findOneById(id);
+    if (!order) {
+      throw new Error(`Order with id ${id} not found`);
+    }
+
+    await this.orderService.updateOneById(id, {
+      status: body.status,
+    });
+
+    return {
+      data: {
+        orderId: id,
+      },
+      message: `Order updated successfully`,
+    };
+  }
+
+  @Delete('/:id')
+  @Authorized(Roles.ADMIN)
+  public async deleteOrder(@Param('id') id: Ref<Order>) {
+    const order = await this.orderService.findOneById(id);
+    if (!order) {
+      throw new Error(`Order with id ${id} not found`);
+    }
+
+    await this.orderService.delete(id);
+
+    return {
+      message: `Order with id ${id} deleted successfully`,
     };
   }
 }

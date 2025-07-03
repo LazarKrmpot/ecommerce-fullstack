@@ -1,4 +1,5 @@
 import { ROUTES } from "@/constants/routes";
+import { Orders } from "@/pages/admin/pages/Orders/Orders";
 import { Overview } from "@/pages/admin/pages/Overview/Overview";
 import { Products } from "@/pages/admin/pages/Products/Products";
 import { Users } from "@/pages/admin/pages/Users/Users";
@@ -15,14 +16,7 @@ export const AdminRoutes = () => {
       /> */}
       <Route path={ROUTES.ADMIN.RELATIVE.USERS} element={<Users />} />
       <Route path={ROUTES.ADMIN.RELATIVE.PRODUCTS} element={<Products />} />
-      <Route
-        path={ROUTES.ADMIN.RELATIVE.ORDERS}
-        element={
-          <div className="text-center text-muted-foreground">
-            Orders management coming soon
-          </div>
-        }
-      />
+      <Route path={ROUTES.ADMIN.RELATIVE.ORDERS} element={<Orders />} />
       <Route
         path={ROUTES.ADMIN.RELATIVE.ANALYTICS}
         element={
