@@ -8,12 +8,15 @@ import { useCartStore } from "@/store/cartStore";
 import CartItem from "./components/CartItem";
 
 import CartHeader from "./components/CartHeader";
-import { DeliveryAddress } from "@/models/user";
+import { DeliveryAddress, OrderDeliveryAddress } from "@/models/user";
 import { CheckoutFormData, validateAddressForm } from "./utils/formValidate";
 import { useCartSummary, ShippingMethod } from "@/hooks/cart/useCartSummary";
 import ConfirmOrder from "./components/ConfirmOrder/ConfirmOrder";
 import CheckoutForm from "./components/CheckoutForm/CheckoutForm";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { CreateOrderRequest } from "@/models/order";
+import { createOrder } from "@/services/ordersService";
+import { toast } from "sonner";
 
 export type CartStep = "cart" | "address" | "confirmation";
 
@@ -101,7 +104,8 @@ export function Cart() {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]:
+        name === "zipcode" || name === "postalCode" ? Number(value) : value,
     }));
     setTouchedFields((prev) => ({
       ...prev,
@@ -126,6 +130,33 @@ export function Cart() {
 
   const handlePreviousStep = () => {
     setStepIndex((prev) => Math.max(prev - 1, 0));
+  };
+
+  const handleConfirmOrder = async () => {
+    const orderDetails: CreateOrderRequest = {
+      orderedItems: useCartStore.getState().items.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      })),
+      usePrimaryAddress,
+      shippingMethod: selectedShippingMethod,
+    };
+
+    if (!usePrimaryAddress) {
+      orderDetails.deliveryAddress = selectedAddress as OrderDeliveryAddress;
+    }
+
+    try {
+      await createOrder(orderDetails);
+      toast.success("Order created successfully!");
+      useCartStore.getState().clearCart();
+      toggleCart();
+      setStepIndex(0);
+      setSelectedAddress(null);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      toast.error("Failed to create order. Please try again.");
+    }
   };
 
   const renderStepButton = () => {
@@ -154,10 +185,7 @@ export function Cart() {
         );
       case "confirmation":
         return (
-          <Button
-            className="w-full"
-            onClick={() => alert("Checkout not implemented yet")}
-          >
+          <Button className="w-full" onClick={handleConfirmOrder}>
             Confirm Order
           </Button>
         );

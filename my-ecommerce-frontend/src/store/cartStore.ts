@@ -143,7 +143,6 @@ export const useCartStore = create<CartState>()(
           shipping: 0,
           total: 0,
         });
-        toast.success("Cart cleared");
       },
 
       toggleCart: () => {

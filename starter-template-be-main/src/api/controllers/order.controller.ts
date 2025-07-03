@@ -32,6 +32,7 @@ import {
   Param,
   Post,
   Put,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   QueryParams,
 } from 'routing-controllers';
 import { ResponseSchema } from 'routing-controllers-openapi';
@@ -41,6 +42,9 @@ export class CreateOrderBody {
   @ValidateNested({ each: true })
   @Type(() => OrderedItem)
   orderedItems: OrderedItem[];
+
+  @IsString()
+  shippingMethod: string;
 
   @IsOptional()
   @ValidateNested()
@@ -219,7 +223,8 @@ export class OrderController {
     @Body() body: CreateOrderBody,
     @CurrentUser() user: User,
   ) {
-    const { orderedItems, deliveryAddress, usePrimaryAddress } = body;
+    const { orderedItems, deliveryAddress, usePrimaryAddress, shippingMethod } =
+      body;
 
     let finalDeliveryAddress: OrderDeliveryAddress;
 
@@ -264,6 +269,7 @@ export class OrderController {
     await this.orderService.create({
       orderedItems,
       deliveryAddress: finalDeliveryAddress,
+      shippingMethod,
       priceToPay: totalPrice,
       orderedByUser: user?._id,
     });

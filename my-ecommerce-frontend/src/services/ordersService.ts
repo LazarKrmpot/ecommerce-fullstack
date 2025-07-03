@@ -13,4 +13,12 @@ export const getOrders = async (page = 1, limit = 10) => {
   }
 };
 
-export const createOrder = async (orderData: CreateOrderRequest) => {};
+export const createOrder = async (orderData: CreateOrderRequest) => {
+  try {
+    const { data } = await api.post("/orders", orderData);
+    return data;
+  } catch (error) {
+    console.error("Error creating order:", error);
+    throw error;
+  }
+};

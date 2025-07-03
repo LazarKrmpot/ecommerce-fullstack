@@ -126,6 +126,11 @@ export class Order extends Document {
   public status: OrderStatus;
 
   @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public shippingMethod: string;
+
+  @Expose()
   @IsNumber()
   @prop({ type: Number, required: true })
   public priceToPay: number;

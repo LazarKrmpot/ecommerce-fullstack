@@ -1,3 +1,4 @@
+import { ShippingMethod } from "@/hooks";
 import { OrderDeliveryAddress } from "./user";
 
 export interface OrderedItem {
@@ -42,6 +43,7 @@ export interface Order {
     phoneNumber: string;
   };
   status: OrderStatus;
+  shippingMethod: ShippingMethod;
   priceToPay: number;
   _id: string;
   createdAt: Date;
@@ -64,7 +66,8 @@ export interface OrderResponse {
 export interface CreateOrderRequest {
   orderedItems: CreateOrderItem[];
   deliveryAddress?: OrderDeliveryAddress;
-  usePrimaryAddress?: boolean;
+  usePrimaryAddress: boolean;
+  shippingMethod: ShippingMethod;
 }
 
 export enum OrderStatus {
