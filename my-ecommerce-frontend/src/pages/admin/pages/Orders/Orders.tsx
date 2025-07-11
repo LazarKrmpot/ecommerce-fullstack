@@ -15,11 +15,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ShippingMethod } from "@/hooks";
 import { useOrdersData } from "@/hooks/orders/useOrdersData";
-import { OrderedItem, OrderStatus } from "@/models/order";
-import { CheckCircle, Clock, Package, Truck, XCircle, Zap } from "lucide-react";
+import { UpdateOrderPayload } from "@/models/order";
+
 import { useEffect, useState } from "react";
+import { EditOrder } from "./components/EditOrder/EditOrder";
+import { toast } from "sonner";
+import { updateOrder } from "@/services/ordersService";
+import {
+  getItemsQuantity,
+  getShippingConfig,
+  getStatusConfig,
+} from "./utils/orderHelpers";
+import { PreviewOrder } from "./components/PeviewOrder/PreviewOrder";
 
 export const Orders = () => {
   const [page, setPage] = useState(1);
@@ -30,64 +38,40 @@ export const Orders = () => {
     limit
   );
 
-  const getItemsQuantity = (orderedItems: OrderedItem[]) => {
-    return orderedItems.reduce((total, item) => total + item.quantity, 0);
-  };
-  const getStatusConfig = (status: OrderStatus = OrderStatus.PENDING) => {
-    const configs = {
-      [OrderStatus.PENDING]: {
-        label: "Pending",
-        className: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        icon: <Clock className="w-3 h-3" />,
-      },
-      [OrderStatus.ACCEPTED]: {
-        label: "Accepted",
-        className: "bg-blue-100 text-blue-800 border-blue-200",
-        icon: <CheckCircle className="w-3 h-3" />,
-      },
-      [OrderStatus.REJECTED]: {
-        label: "Rejected",
-        className: "bg-red-100 text-red-800 border-red-200",
-        icon: <XCircle className="w-3 h-3" />,
-      },
-      [OrderStatus.DELIVERED]: {
-        label: "Delivered",
-        className: "bg-green-100 text-green-800 border-green-200",
-        icon: <CheckCircle className="w-3 h-3" />,
-      },
-      [OrderStatus.CANCELLED]: {
-        label: "Cancelled",
-        className: "bg-gray-100 text-gray-800 border-gray-200",
-        icon: <XCircle className="w-3 h-3" />,
-      },
-    };
-    return configs[status];
-  };
-
-  const getShippingConfig = (method: ShippingMethod) => {
-    const configs = {
-      standard: {
-        label: "Standard",
-        className: "bg-gray-100 text-gray-800 border-gray-200",
-        icon: <Package className="w-3 h-3" />,
-      },
-      express: {
-        label: "Express",
-        className: "bg-orange-100 text-orange-800 border-orange-200",
-        icon: <Truck className="w-3 h-3" />,
-      },
-      overnight: {
-        label: "Overnight",
-        className: "bg-red-100 text-red-800 border-red-200",
-        icon: <Zap className="w-3 h-3" />,
-      },
-    };
-    return configs[method];
-  };
-
   useEffect(() => {
     fetchOrders();
   }, [page]);
+
+  const handleUpdateOrder = async (
+    updatedOrder: UpdateOrderPayload
+  ): Promise<void> => {
+    const productId = updatedOrder._id;
+    if (!productId) {
+      toast.error("Order ID is required for update");
+      return;
+    }
+
+    try {
+      const savedOrder = await updateOrder(productId, updatedOrder);
+      console.log("Order saved successfully:", savedOrder?.data._id);
+      if (!savedOrder || !savedOrder?.data._id) {
+        throw new Error("Failed to save order");
+      }
+
+      setOrders((prev) => ({
+        ...prev,
+        data: prev.data.map((order) =>
+          order._id === savedOrder?.data._id ? savedOrder.data : order
+        ),
+      }));
+      console.log("Order updated successfully:", orders);
+
+      toast.success("Order updated successfully!");
+    } catch (error) {
+      console.error("Error updating order:", error);
+      toast.error("Failed to update order. Please try again.");
+    }
+  };
 
   return (
     <Card>
@@ -117,6 +101,7 @@ export const Orders = () => {
               {orders?.data?.map((order) => {
                 const statusConfig = getStatusConfig(order.status);
                 const shippingConfig = getShippingConfig(order.shippingMethod);
+                console.log(order);
 
                 return (
                   <TableRow className="text-left" key={order._id}>
@@ -147,9 +132,15 @@ export const Orders = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {getItemsQuantity(order.orderedItems)} items
+                      {getItemsQuantity(order.orderedItems)}
                     </TableCell>
                     <TableCell>${order.priceToPay}</TableCell>
+                    <TableCell>
+                      <div className="text-right gap-2 flex items-center justify-end">
+                        <PreviewOrder order={order} />
+                        <EditOrder order={order} onSave={handleUpdateOrder} />
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })}

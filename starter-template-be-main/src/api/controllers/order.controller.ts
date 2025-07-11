@@ -5,6 +5,7 @@ import {
   Order,
   OrderDeliveryAddress,
   OrderedItem,
+  ShippingMethod,
 } from 'api/models/order.model';
 import { Product } from 'api/models/product.model';
 import { Shop } from 'api/models/shop.model';
@@ -17,7 +18,6 @@ import { Exclude, Type, plainToInstance } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
-  IsMongoId,
   IsOptional,
   IsString,
   ValidateNested,
@@ -44,7 +44,7 @@ export class CreateOrderBody {
   orderedItems: OrderedItem[];
 
   @IsString()
-  shippingMethod: string;
+  shippingMethod: ShippingMethod;
 
   @IsOptional()
   @ValidateNested()
@@ -87,6 +87,9 @@ class CategoryResponse extends OmitType(Category, ['__v']) {
   protected_: null;
 
   @Exclude()
+  __v: number;
+
+  @Exclude()
   createdAt: Date;
 
   @Exclude()
@@ -97,12 +100,14 @@ class ProductWithCategory extends OmitType(Product, [
   '__v',
   'categoryId',
   'status',
-  'status',
   'isFeatured',
   'currency',
   'stock',
   'shopId',
 ]) {
+  @Exclude()
+  __v: number;
+
   @Exclude()
   @IsOptional()
   protected_: null;
@@ -196,7 +201,7 @@ class MyOrdersResponse {
   message: string;
 }
 
-class UpdateOrderBody extends PickType(Order, ['status']) {
+class UpdateOrderBody extends PickType(Order, ['status', 'shippingMethod']) {
   @Exclude()
   @IsOptional()
   protected _: null;
@@ -206,8 +211,9 @@ class UpdateOrderResponse {
   @IsString()
   message: string;
 
-  @IsMongoId()
-  data: Ref<Order>;
+  @ValidateNested({ each: true })
+  @Type(() => MyOderType)
+  data: MyOderType[];
 }
 @JsonController('/orders')
 export class OrderController {
@@ -413,6 +419,44 @@ export class OrderController {
     };
   }
 
+  @Get('/:id')
+  @Authorized(Object.values(Roles))
+  @ResponseSchema(OrderType)
+  public async getOrderById(@Param('id') id: Ref<Order>) {
+    const order = await this.orderService.findOneById(id, {
+      populate: [
+        {
+          path: 'orderedByUser',
+          Model: 'users',
+          type: 'single',
+        },
+        {
+          path: 'orderedItems.productId',
+          Model: Product,
+          type: 'single',
+          populate: {
+            path: 'categoryId',
+            Model: Category,
+            type: 'single',
+          },
+        },
+      ],
+      Model: OrderType,
+    });
+
+    if (!order) {
+      return {
+        data: null,
+        message: `Order with id ${id} not found`,
+      };
+    }
+
+    return {
+      data: order,
+      message: `Order with id ${id} retrieved successfully`,
+    };
+  }
+
   @Put('/:id')
   @Authorized(Roles.ADMIN)
   @ResponseSchema(UpdateOrderResponse)
@@ -427,12 +471,32 @@ export class OrderController {
 
     await this.orderService.updateOneById(id, {
       status: body.status,
+      shippingMethod: body.shippingMethod,
+    });
+
+    const updatedOrder = await this.orderService.findOneById(id, {
+      populate: [
+        {
+          path: 'orderedByUser',
+          Model: 'users',
+          type: 'single',
+        },
+        {
+          path: 'orderedItems.productId',
+          Model: Product,
+          type: 'single',
+          populate: {
+            path: 'categoryId',
+            Model: Category,
+            type: 'single',
+          },
+        },
+      ],
+      Model: OrderType,
     });
 
     return {
-      data: {
-        orderId: id,
-      },
+      data: updatedOrder,
       message: `Order updated successfully`,
     };
   }

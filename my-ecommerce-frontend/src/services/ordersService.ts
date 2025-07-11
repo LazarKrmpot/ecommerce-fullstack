@@ -1,4 +1,4 @@
-import { CreateOrderRequest } from "@/models/order";
+import { CreateOrderRequest, UpdateOrderPayload } from "@/models/order";
 import api from "./api";
 
 export const getOrders = async (page = 1, limit = 10) => {
@@ -19,6 +19,29 @@ export const createOrder = async (orderData: CreateOrderRequest) => {
     return data;
   } catch (error) {
     console.error("Error creating order:", error);
+    throw error;
+  }
+};
+
+export const getOrderById = async (orderId: string) => {
+  try {
+    const { data } = await api.get(`/orders/${orderId}`);
+    return data;
+  } catch (error) {
+    console.error("Error fetching order by ID:", error);
+    throw error;
+  }
+};
+
+export const updateOrder = async (
+  orderId: string,
+  updateData: UpdateOrderPayload
+) => {
+  try {
+    const { data } = await api.put(`/orders/${orderId}`, updateData);
+    return data;
+  } catch (error) {
+    console.error("Error updating order:", error);
     throw error;
   }
 };

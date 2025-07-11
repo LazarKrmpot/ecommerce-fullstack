@@ -77,3 +77,9 @@ export enum OrderStatus {
   DELIVERED = "delivered",
   CANCELLED = "cancelled",
 }
+
+export interface UpdateOrderPayload {
+  _id: string;
+  status?: OrderStatus;
+  shippingMethod?: ShippingMethod;
+}

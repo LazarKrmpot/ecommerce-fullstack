@@ -25,6 +25,12 @@ export enum OrderStatus {
   CANCELLED = 'cancelled',
 }
 
+export enum ShippingMethod {
+  STANDARD = 'standard',
+  EXPRESS = 'express',
+  OVERNIGHT = 'overnight',
+}
+
 export class OrderedItem {
   @Expose()
   @IsMongoId()
@@ -126,9 +132,9 @@ export class Order extends Document {
   public status: OrderStatus;
 
   @Expose()
-  @IsString()
+  @IsEnum(ShippingMethod)
   @prop({ type: String, required: true })
-  public shippingMethod: string;
+  public shippingMethod: ShippingMethod;
 
   @Expose()
   @IsNumber()
