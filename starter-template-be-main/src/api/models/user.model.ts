@@ -15,6 +15,7 @@ import Container from 'typedi';
 export enum Roles {
   ADMIN = 'admin',
   USER = 'user',
+  GUEST = 'guest',
 }
 
 export type RoleType = `${Roles}`;

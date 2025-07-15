@@ -59,4 +59,38 @@ const getShippingConfig = (method: ShippingMethod) => {
   return configs[method];
 };
 
-export { getItemsQuantity, getStatusConfig, getShippingConfig };
+const formatTimeSinceUpdate = (
+  updatedAt: Date | string,
+  format: "short" | "long" = "long"
+): string | null => {
+  const updatedDate =
+    typeof updatedAt === "string" ? new Date(updatedAt) : updatedAt;
+  const now = new Date();
+  const diffMs = now.getTime() - updatedDate.getTime();
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (days > 4) return null;
+
+  const prefix = format === "long" ? "Updated " : "";
+
+  if (days >= 1) {
+    return `${prefix}${days} day${days > 1 ? "s" : ""} ago`;
+  }
+  if (hours >= 1) {
+    return `${prefix}${hours} hour${hours > 1 ? "s" : ""} ago`;
+  }
+  if (minutes >= 1) {
+    return `${prefix}${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  }
+  return `${prefix}just now`;
+};
+
+export {
+  getItemsQuantity,
+  getStatusConfig,
+  getShippingConfig,
+  formatTimeSinceUpdate,
+};

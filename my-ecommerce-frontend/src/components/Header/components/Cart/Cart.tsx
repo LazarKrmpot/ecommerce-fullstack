@@ -146,6 +146,8 @@ export function Cart() {
       orderDetails.deliveryAddress = selectedAddress as OrderDeliveryAddress;
     }
 
+    console.log("Order Details:", orderDetails);
+
     try {
       await createOrder(orderDetails);
       toast.success("Order created successfully!");

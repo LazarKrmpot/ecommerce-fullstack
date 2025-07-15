@@ -64,7 +64,7 @@ const Header = () => {
           </div>
           <div className="hidden sm:ml-6 md:flex sm:items-center">
             {user ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4 mr-4">
                 {user.role === "admin" && (
                   <Link
                     to={ROUTES.ADMIN.DASHBOARD}
@@ -88,8 +88,6 @@ const Header = () => {
                   Profile
                 </Link>
 
-                <Cart />
-
                 <Button
                   variant="outline"
                   onClick={handleLogout}
@@ -104,7 +102,7 @@ const Header = () => {
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                   isActive(ROUTES.LOGIN)
                     ? "border-b-2 border-red-500 text-red-700 hover:text-red-700"
-                    : "border-transparent text-gray-500 hover:border-blue-300 hover:text-gray-700"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 <Button
@@ -115,6 +113,7 @@ const Header = () => {
                 </Button>
               </Link>
             )}
+            <Cart />
           </div>
           {/* Mobile menu button */}
           {isMobile && (

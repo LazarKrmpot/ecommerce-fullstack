@@ -7,33 +7,12 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Box, Truck } from "lucide-react";
+import { Box } from "lucide-react";
 
 interface UpdateOrderForm {
   status: OrderStatus;
   shippingMethod: ShippingMethod;
 }
-
-const SHIPPING_METHODS = [
-  {
-    value: "standard",
-    label: "Standard",
-    description: "3-5 business days",
-    price: 5.99,
-  },
-  {
-    value: "express",
-    label: "Express",
-    description: "1-2 business days",
-    price: 9.99,
-  },
-  {
-    value: "overnight",
-    label: "Overnight",
-    description: "Next day delivery",
-    price: 19.99,
-  },
-];
 
 const ORDER_STATUS_OPTIONS = [
   { value: OrderStatus.PENDING, label: "Pending" },

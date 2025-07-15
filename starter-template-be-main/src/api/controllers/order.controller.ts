@@ -227,17 +227,19 @@ export class OrderController {
   @Authorized(Object.values(Roles))
   public async createOrder(
     @Body() body: CreateOrderBody,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User | null,
   ) {
     const { orderedItems, deliveryAddress, usePrimaryAddress, shippingMethod } =
       body;
 
     let finalDeliveryAddress: OrderDeliveryAddress;
 
+    console.log('Primary Address USER:', user);
     if (usePrimaryAddress) {
       const primaryAddress = user.deliveryAddresses?.find(
         (addr) => addr.isPrimary,
       );
+
       if (!primaryAddress) {
         throw new Error('No primary delivery address found for user');
       }

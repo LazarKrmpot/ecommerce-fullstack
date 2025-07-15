@@ -1,3 +1,4 @@
+// src/middlewares/authorizationChecker.ts
 import { RoleType, Roles } from 'api/models/user.model';
 import { AuthService } from 'api/services/auth.service';
 import { UserService } from 'api/services/user.service';
@@ -19,19 +20,51 @@ export function authorizationChecker(): (
     action: Action,
     roles: RoleType[],
   ): Promise<boolean> {
-    const { id } = await authService.parseTokenFromRequest(action.request);
-    const user = await userService.findOneById(id, {
-      Model: UserType,
-    });
+    /********************************************************************
+     * 1. Try to parse the JWT. If it fails we treat requester as Guest. *
+     ********************************************************************/
+    let userRole: RoleType = 'guest' as RoleType;
+    let userDocument: any = null; // will stay null for guests
 
-    if (!roles.includes(user.role)) {
-      log.warn('Unauthorized access');
+    try {
+      const { id } = await authService.parseTokenFromRequest(action.request);
+
+      if (id) {
+        userDocument = await userService.findOneById(id, { Model: UserType });
+        if (userDocument) userRole = userDocument.role;
+      }
+    } catch (e) {
+      log.warn('Failed to parse JWT from request', e);
+    }
+
+    /******************************************************
+     * 2. Check if the resolved role is authorised.       *
+     ******************************************************/
+    const allowed = roles.includes(userRole);
+
+    if (!allowed) {
+      log.warn(
+        `Unauthorized access. Required: [${roles.join(
+          ', ',
+        )}], Got: ${userRole}`,
+      );
       return false;
     }
 
-    action.request.user = user;
-    log.info('Successfully checked credentials');
+    /******************************************************
+     * 3. Attach a user‑like object to the request so     *
+     *    controllers can rely on action.request.user.    *
+     ******************************************************/
+    action.request.user =
+      userDocument ??
+      ({
+        role: 'guest',
+        name: 'Guest',
+        email: null,
+        deliveryAddresses: [],
+      } as unknown as Partial<UserType>);
 
+    log.info(`Credentials OK — acting as ${userRole}`);
     return true;
   };
 }

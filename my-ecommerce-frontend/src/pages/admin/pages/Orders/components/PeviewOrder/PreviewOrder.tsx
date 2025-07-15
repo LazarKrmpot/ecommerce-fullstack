@@ -5,10 +5,22 @@ import {
   getItemsQuantity,
   getShippingConfig,
   getStatusConfig,
+  formatTimeSinceUpdate,
 } from "../../utils/orderHelpers";
-import { Box, Calendar, Eye, ShoppingBag, Truck, User } from "lucide-react";
+import {
+  Box,
+  Calendar,
+  Clock,
+  Eye,
+  History,
+  Info,
+  ShoppingBag,
+  Truck,
+  User,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { generateOrderPDF } from "../../utils/generateOrderPDF";
 
 interface PreviewOrderProps {
   order: Order;
@@ -38,6 +50,34 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
     icon: shippingIcon,
   } = getShippingConfig(order.shippingMethod);
 
+  const orderedByUser = order.orderedByUser
+    ? {
+        name: order.orderedByUser.name,
+        email: order.orderedByUser.email,
+      }
+    : {
+        name:
+          order.deliveryAddress.firstName +
+          " " +
+          order.deliveryAddress.lastName,
+        email: order.deliveryAddress.email,
+      };
+
+  const onGeneratePDF = () => {
+    generateOrderPDF(order);
+  };
+
+  const headerButton = (
+    <Button
+      type="button"
+      variant="default"
+      onClick={onGeneratePDF}
+      className="transition-all !m-0 duration-200 mt-2 w-full sm:w-fit sm:ml-2"
+    >
+      Download PDF Summary
+    </Button>
+  );
+
   return (
     <ResponsiveForm
       handleOpenDialog={toggleDialog}
@@ -45,17 +85,23 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
       title="Order Details"
       description={"Order id: " + order._id}
       triggerIcon={triggerIcon}
-      classNames="mx-auto py-8 px-4 md:px-6 min-w-[90vw] h-[90vh] overflow-y-auto"
+      headerChildren={headerButton}
+      classNames="mx-auto py-8 px-4 px-6 min-w-[70vw] 2xl:min-w-[50vw] max-h-[90vh] overflow-y-auto"
     >
       {/* Header: Status and Date */}
       <section className="flex items-center justify-between mb-6">
-        <span
-          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusClassName}`}
-        >
-          {statusIcon}
-          {statusLabel}
-        </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusClassName}`}
+          >
+            {statusIcon}
+            {statusLabel}
+          </span>
+          <span className="text-xs text-gray-500">
+            {formatTimeSinceUpdate(order.updatedAt)}
+          </span>
+        </div>
+        <div className="flex border-1 py-1 px-3 rounded items-center gap-2">
           <Calendar className="h-4 w-4" />
           <span className="text-sm font-medium">
             {new Date(order.createdAt).toDateString()}
@@ -70,16 +116,24 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
           <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center">
               <User />
-              <span className="ml-2 font-semibold">Custom Information</span>
+              <span className="ml-2 font-semibold">Customer Information</span>
             </div>
             <div>
               <p className="text-sm">Name</p>
-              <p className="font-semibold">{order.orderedByUser?.name}</p>
+              <p className="font-semibold">{orderedByUser?.name}</p>
             </div>
             <div>
               <p className="text-sm">Email</p>
-              <p className="font-semibold">{order.orderedByUser?.email}</p>
+              <p className="font-semibold">{orderedByUser?.email}</p>
             </div>
+            {!order.orderedByUser && (
+              <div className="flex items-center space-x-1 mt-2">
+                <Info className="h-4 w-4" />
+                <p className="text-xs text-gray-500 italic">
+                  This customer does not have an account in the system.
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Shipping Information */}
@@ -103,6 +157,44 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
                   </p>
                 </div>
               ))}
+            </div>
+          </section>
+          {/* Order Update Information */}
+          <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center">
+              <Info />
+              <span className="ml-2 font-semibold">
+                Order Update Information
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-green-100 rounded-lg mt-0.5">
+                  <Clock className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    Order Created
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(order.createdAt).toDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg mt-0.5">
+                  <History className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    Last Updated
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {formatTimeSinceUpdate(order.updatedAt)}
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
         </div>
@@ -143,7 +235,9 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
             <Separator className="my-2" />
             <div className="flex items-center justify-between">
               <span className="text-m font-semibold">Total:</span>
-              <span className="text-xl font-bold">${order.priceToPay}</span>
+              <span className="text-xl font-bold">
+                ${order.priceToPay.toFixed(2)}
+              </span>
             </div>
           </section>
           {/* Order summary */}

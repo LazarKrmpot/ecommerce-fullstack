@@ -16,18 +16,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useOrdersData } from "@/hooks/orders/useOrdersData";
-import { UpdateOrderPayload } from "@/models/order";
+import { Order, UpdateOrderPayload } from "@/models/order";
 
 import { useEffect, useState } from "react";
 import { EditOrder } from "./components/EditOrder/EditOrder";
 import { toast } from "sonner";
 import { updateOrder } from "@/services/ordersService";
 import {
+  formatTimeSinceUpdate,
   getItemsQuantity,
   getShippingConfig,
   getStatusConfig,
 } from "./utils/orderHelpers";
 import { PreviewOrder } from "./components/PeviewOrder/PreviewOrder";
+import { Button } from "@/components/ui/button";
+import { generateOrderPDF } from "./utils/generateOrderPDF";
+import { Download } from "lucide-react";
+import { OrdersTableSkeleton } from "./components/SkeletonLoading/OrdersTableSkeleton";
 
 export const Orders = () => {
   const [page, setPage] = useState(1);
@@ -73,6 +78,25 @@ export const Orders = () => {
     }
   };
 
+  const formatOrderedUserInfo = (order: Order) => {
+    return order.orderedByUser
+      ? {
+          name: order.orderedByUser.name,
+          email: order.orderedByUser.email,
+        }
+      : {
+          name:
+            order.deliveryAddress.firstName +
+            " " +
+            order.deliveryAddress.lastName,
+          email: order.deliveryAddress.email,
+        };
+  };
+
+  const onGeneratePDF = (order: Order) => {
+    generateOrderPDF(order);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -80,16 +104,15 @@ export const Orders = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-center text-muted-foreground">
-            Loading orders...
-          </div>
+          <OrdersTableSkeleton />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Order ID</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Updated</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Shipping Method</TableHead>
                 <TableHead>Items</TableHead>
@@ -101,19 +124,22 @@ export const Orders = () => {
               {orders?.data?.map((order) => {
                 const statusConfig = getStatusConfig(order.status);
                 const shippingConfig = getShippingConfig(order.shippingMethod);
-                console.log(order);
+                const orderedByUser = formatOrderedUserInfo(order);
 
                 return (
                   <TableRow className="text-left" key={order._id}>
                     <TableCell>{order._id}</TableCell>
                     <TableCell>
                       <p className="text-[1.1rem] font-bold">
-                        {order.orderedByUser?.name}
+                        {orderedByUser.name}
                       </p>
-                      <p>{order.orderedByUser?.email}</p>
+                      <p>{orderedByUser.email}</p>
                     </TableCell>
                     <TableCell>
                       {new Date(order.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {formatTimeSinceUpdate(order.updatedAt, "short")}
                     </TableCell>
                     <TableCell>
                       <span
@@ -134,11 +160,20 @@ export const Orders = () => {
                     <TableCell>
                       {getItemsQuantity(order.orderedItems)}
                     </TableCell>
-                    <TableCell>${order.priceToPay}</TableCell>
+                    <TableCell>${order.priceToPay.toFixed(2)}</TableCell>
                     <TableCell>
                       <div className="text-right gap-2 flex items-center justify-end">
                         <PreviewOrder order={order} />
                         <EditOrder order={order} onSave={handleUpdateOrder} />
+                        <Button
+                          type="button"
+                          onClick={() => onGeneratePDF(order)}
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+                        >
+                          <Download />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

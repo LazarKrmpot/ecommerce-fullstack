@@ -73,7 +73,7 @@ export const UploadProducts = ({ getStats }: UploadProductsProps) => {
       title="Upload Products"
       description="Form accepts a csv file with the following headers: name, description, price, stock, isFeatured, categoryId"
       customTrigger={trigger}
-      classNames="mx-auto py-8 px-4 md:px-6 min-w-[90vw] h-[90vh] overflow-y-auto"
+      classNames="mx-auto py-8 px-4 md:px-6 min-w-[90vw] h-[95vh] overflow-y-auto"
     >
       <PageHeader
         title="Product CSV Upload"
