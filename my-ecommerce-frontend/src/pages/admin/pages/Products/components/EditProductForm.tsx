@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Category } from "@/models/category";
-import { ResponsiveForm } from "@/components/ResponsiveForm";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog";
 import { useState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -112,7 +112,7 @@ export const EditProductForm = ({
   };
 
   return (
-    <ResponsiveForm
+    <ResponsiveDialog
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
       title="Edit Product"
@@ -260,6 +260,6 @@ export const EditProductForm = ({
           />
         </div>
       </form>
-    </ResponsiveForm>
+    </ResponsiveDialog>
   );
 };

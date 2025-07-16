@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 
-interface ResponsiveFormProps {
+interface ResponsiveDialogProps {
   title: string;
   description: string;
   triggerIcon?: React.ReactNode;
@@ -33,7 +33,7 @@ interface ResponsiveFormProps {
   disabled?: boolean;
 }
 
-export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
+export const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
   title,
   description,
   triggerIcon = <Edit className="h-4 w-4" />,
@@ -67,7 +67,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
         </DialogTrigger>
         <DialogContent className={classNames}>
           <DialogHeader className="mt-4 flex md:flex-row space-y-2 justify-between items-center">
-            <div>
+            <div className="flex flex-col space-y-2">
               <DialogTitle>{title}</DialogTitle>
               {description && (
                 <DialogDescription>{description}</DialogDescription>

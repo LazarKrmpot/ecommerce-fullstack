@@ -2,7 +2,7 @@ import { DeliveryAddress, DeliveryAddressPost } from "@/models/user";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ResponsiveForm } from "@/components/ResponsiveForm";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog";
 import { Edit } from "lucide-react";
 
 interface EditAddressFormProps {
@@ -71,7 +71,7 @@ export const EditAddressForm = ({
   );
 
   return (
-    <ResponsiveForm
+    <ResponsiveDialog
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
       title="Edit Address"
@@ -177,6 +177,6 @@ export const EditAddressForm = ({
           Save Changes
         </button>
       </form>
-    </ResponsiveForm>
+    </ResponsiveDialog>
   );
 };

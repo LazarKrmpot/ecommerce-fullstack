@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useState, useMemo } from "react";
-import { ResponsiveForm } from "@/components/ResponsiveForm";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CategoryReference } from "./components/CategoryRefrence";
 import { CsvFormatGuide } from "./components/CsvFormatGuide";
@@ -67,7 +67,7 @@ export const UploadProducts = ({ getStats }: UploadProductsProps) => {
   }, [isMobile]);
 
   return (
-    <ResponsiveForm
+    <ResponsiveDialog
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
       title="Upload Products"
@@ -89,6 +89,6 @@ export const UploadProducts = ({ getStats }: UploadProductsProps) => {
           <CategoryReference />
         </div>
       </div>
-    </ResponsiveForm>
+    </ResponsiveDialog>
   );
 };

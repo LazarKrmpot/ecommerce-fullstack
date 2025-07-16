@@ -16,7 +16,7 @@ import { PackagePlus, Plus } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Category, CategoryRequest } from "@/models/category";
-import { ResponsiveForm } from "@/components/ResponsiveForm";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog";
 import { CreateProductPayload } from "@/models/product";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -171,7 +171,7 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
   );
 
   return (
-    <ResponsiveForm
+    <ResponsiveDialog
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
       title="Create Product"
@@ -380,6 +380,6 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
           />
         </div>
       </form>
-    </ResponsiveForm>
+    </ResponsiveDialog>
   );
 };

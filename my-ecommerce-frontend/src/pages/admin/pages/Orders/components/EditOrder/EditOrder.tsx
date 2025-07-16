@@ -1,4 +1,4 @@
-import { ResponsiveForm } from "@/components/ResponsiveForm";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog";
 import { Order, OrderStatus, UpdateOrderPayload } from "@/models/order";
 import { useState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -75,7 +75,7 @@ export const EditOrder = ({ order, onSave }: EditOrderProps) => {
   };
 
   return (
-    <ResponsiveForm
+    <ResponsiveDialog
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
       title="Update Order"
@@ -178,6 +178,6 @@ export const EditOrder = ({ order, onSave }: EditOrderProps) => {
           />
         </div>
       </form>
-    </ResponsiveForm>
+    </ResponsiveDialog>
   );
 };

@@ -1,4 +1,4 @@
-import { ResponsiveForm } from "@/components/ResponsiveForm";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog";
 import { UserPut } from "@/models/user";
 import { Edit } from "lucide-react";
 import { useState } from "react";
@@ -59,7 +59,7 @@ export const EditUserInfo = ({ onEditUserInfo, user }: EditUserInfoProps) => {
     </button>
   );
   return (
-    <ResponsiveForm
+    <ResponsiveDialog
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
       title="Edit Profile"
@@ -98,6 +98,6 @@ export const EditUserInfo = ({ onEditUserInfo, user }: EditUserInfoProps) => {
           customClassName="w-full md:w-fit inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
         />
       </form>
-    </ResponsiveForm>
+    </ResponsiveDialog>
   );
 };

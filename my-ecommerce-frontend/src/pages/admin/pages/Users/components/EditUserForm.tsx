@@ -1,6 +1,6 @@
 import { UpdateUserPayload, User } from "@/models/user";
 import { useState } from "react";
-import { ResponsiveForm } from "@/components/ResponsiveForm";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,7 +91,7 @@ export const EditUserForm = ({ user, onSave }: EditUserFormProps) => {
   };
 
   return (
-    <ResponsiveForm
+    <ResponsiveDialog
       handleOpenDialog={toggleDialog}
       isOpen={isOpen}
       title="Edit User"
@@ -199,6 +199,6 @@ export const EditUserForm = ({ user, onSave }: EditUserFormProps) => {
           </Button>
         </div>
       </form>
-    </ResponsiveForm>
+    </ResponsiveDialog>
   );
 };

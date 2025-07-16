@@ -11,6 +11,7 @@ export interface User {
 export type DeliveryAddressPost = Omit<DeliveryAddress, "_id">;
 
 export interface UpdateUserPayload {
+  _id: string;
   name?: string;
   email?: string;
   role?: "user" | "admin";

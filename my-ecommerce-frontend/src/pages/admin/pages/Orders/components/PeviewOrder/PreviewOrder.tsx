@@ -1,4 +1,4 @@
-import { ResponsiveForm } from "@/components/ResponsiveForm";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog";
 import { Order } from "@/models/order";
 import { useState } from "react";
 import {
@@ -21,6 +21,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { generateOrderPDF } from "../../utils/generateOrderPDF";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface PreviewOrderProps {
   order: Order;
@@ -79,7 +81,7 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
   );
 
   return (
-    <ResponsiveForm
+    <ResponsiveDialog
       handleOpenDialog={toggleDialog}
       handleClose={handleClose}
       isOpen={isOpen}
@@ -114,63 +116,65 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
         {/* Left Column: Customer Info + Order Summary */}
         <div className="space-y-6 md:space-y-2 xl:space-y-6">
           {/* Customer Information */}
-          <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
-            <div className="flex items-center">
+          <Card className="bg-gray-50 p-4 gap-4">
+            <CardHeader className="flex p-0 items-center mb-0">
               <User />
-              <span className="ml-2 font-semibold">Customer Information</span>
-            </div>
-            <div>
-              <p className="text-sm">Name</p>
-              <p className="font-semibold">{orderedByUser?.name}</p>
-            </div>
-            <div>
-              <p className="text-sm">Email</p>
-              <p className="font-semibold">{orderedByUser?.email}</p>
-            </div>
-            {!order.orderedByUser && (
-              <div className="flex space-x-1">
-                <div className="h4 w-4">
-                  <Info className="h-4 w-4" />
-                </div>
-                <p className="text-xs text-gray-500 italic">
-                  This customer does not have an account in the system.
-                </p>
+              <span className="font-semibold">Customer Information</span>
+            </CardHeader>
+            <CardContent className="space-y-4 p-0">
+              <div>
+                <p className="text-sm">Name</p>
+                <p className="font-semibold">{orderedByUser?.name}</p>
               </div>
-            )}
-          </section>
+              <div>
+                <p className="text-sm">Email</p>
+                <p className="font-semibold">{orderedByUser?.email}</p>
+              </div>
+              {!order.orderedByUser && (
+                <div className="flex space-x-1">
+                  <div className="h4 w-4">
+                    <Info className="h-4 w-4" />
+                  </div>
+                  <p className="text-xs text-gray-500 italic">
+                    This customer does not have an account in the system.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Shipping Information */}
-          <section className="space-y-4 bg-gray-50 p-4 min-w-50 rounded-lg">
-            <div className="flex items-center">
+          <Card className="bg-gray-50 p-4 gap-4 min-w-50">
+            <CardHeader className="flex gap-2 items-center p-0 mb-0">
               <Truck />
-              <span className="ml-2 font-semibold">Shipping Information</span>
-            </div>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {Object.keys(order.deliveryAddress).map((key) => (
-                <div key={key}>
-                  <p className="text-sm capitalize">
-                    {key.replace(/([A-Z])/g, " $1")}
-                  </p>
-                  <p className="font-semibold">
-                    {
-                      order.deliveryAddress[
-                        key as keyof typeof order.deliveryAddress
-                      ]
-                    }
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
+              <span className="font-semibold">Shipping Information</span>
+            </CardHeader>
+            <CardContent className="space-y-4 p-0">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {Object.keys(order.deliveryAddress).map((key) => (
+                  <div key={key}>
+                    <p className="text-sm capitalize">
+                      {key.replace(/([A-Z])/g, " $1")}
+                    </p>
+                    <p className="font-semibold">
+                      {
+                        order.deliveryAddress[
+                          key as keyof typeof order.deliveryAddress
+                        ]
+                      }
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
           {/* Order Update Information */}
-          <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
-            <div className="flex items-center">
+          <Card className="p-4 gap-4 bg-gray-50">
+            <CardHeader className="flex gap-2 items-center p-0 mb-0">
               <Info />
-              <span className="ml-2 font-semibold">
-                Order Update Information
-              </span>
-            </div>
-            <div className="space-y-3">
+              <span className="font-semibold">Order Update Information</span>
+            </CardHeader>
+            <CardContent className="space-y-4 p-0">
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-green-100 rounded-lg mt-0.5">
                   <Clock className="w-4 h-4 text-green-600" />
@@ -198,79 +202,103 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
                   </p>
                 </div>
               </div>
-            </div>
-          </section>
+            </CardContent>
+          </Card>
         </div>
         {/* Right Column: Ordered Items + Shipping Info */}
         <div className="space-y-6 md:space-y-2 xl:space-y-6">
           {/* Ordered Items */}
-          <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
-            <div className="flex items-center">
+          <Card className="p-4 gap-4 bg-gray-50">
+            <CardHeader className="flex gap-2 items-center p-0 mb-0">
               <ShoppingBag />
-              <span className="ml-2 font-semibold">Ordered Items</span>
-            </div>
-            {order.orderedItems.map((item) => (
-              <div
-                key={item.productId._id}
-                className="flex items-center justify-between space-x-4 p-2 bg-white rounded"
+              <span className="font-semibold">Ordered Items</span>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea
+                className={`h-[400px] ${
+                  order.orderedItems.length > 5 ? "pr-4" : ""
+                }`}
               >
-                <div className="flex items-center space-x-2">
-                  <img
-                    // src={item.productId.imageUrl}
-                    alt={item.productId.name}
-                    className="w-12 h-12 object-cover rounded"
-                  />
-                  <div>
-                    <p className="font-semibold">{item.productId.name}</p>
-                    <p className="text-xs">Quantity: {item.quantity}</p>
-                  </div>
+                <div className="space-y-2">
+                  {order.orderedItems.map((item) => (
+                    <div
+                      key={item.productId._id}
+                      className="flex items-center border-1 shadow-sm justify-between space-x-4 p-2 bg-white rounded-xl"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <img
+                          // src={item.productId.imageUrl}
+                          alt={item.productId.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                        <div>
+                          <p className="font-semibold">{item.productId.name}</p>
+                          <p className="text-xs">Quantity: {item.quantity}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold">
+                          ${item.productId.price * item.quantity}
+                        </p>
+                        <p className="text-xs font-bold text-gray-500">
+                          ${item.productId.price} each
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold">
-                    ${item.productId.price * item.quantity}
-                  </p>
-                  <p className="text-xs font-bold text-gray-500">
-                    ${item.productId.price} each
-                  </p>
+              </ScrollArea>
+
+              <Separator className="my-6" />
+              <section className="space-y-1 mt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Total Products:</span>
+                  <span className="text-md font-bold">
+                    {order.orderedItems.length}
+                  </span>
                 </div>
-              </div>
-            ))}
-            <Separator className="my-2" />
-            <div className="flex items-center justify-between">
-              <span className="text-m font-semibold">Total:</span>
-              <span className="text-xl font-bold">
-                ${order.priceToPay.toFixed(2)}
-              </span>
-            </div>
-          </section>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-m font-semibold">Total:</span>
+                  <span className="text-xl font-bold">
+                    ${order.priceToPay.toFixed(2)}
+                  </span>
+                </div>
+              </section>
+            </CardContent>
+          </Card>
           {/* Order summary */}
-          <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
-            <div className="flex items-center">
+          <Card className="p-4 gap-4 bg-gray-50">
+            <CardHeader className="flex gap-2 items-center p-0 mb-0">
               <Box />
-              <span className="ml-2 font-semibold">Order Summary</span>
-            </div>
-            <div>
-              <p className="text-sm">Items</p>
-              <p className="font-semibold">
-                {getItemsQuantity(order.orderedItems)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm">Total Amount</p>
-              <p className="font-bold text-xl">${order.priceToPay}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm">Shipping Method</p>
-              <span
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingClassName}`}
-              >
-                {shippingIcon}
-                {shippingLabel}
-              </span>
-            </div>
-          </section>
+              <span className="font-semibold">Order Summary</span>
+            </CardHeader>
+            <CardContent className="space-y-4 p-0">
+              <div>
+                <p className="text-sm">Items</p>
+                <p className="font-semibold">
+                  {getItemsQuantity(order.orderedItems)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm">Total Amount</p>
+                <p className="font-bold text-xl">
+                  ${order.priceToPay.toFixed(2)}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm">Shipping Method</p>
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingClassName}`}
+                >
+                  {shippingIcon}
+                  {shippingLabel}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </ResponsiveForm>
+    </ResponsiveDialog>
   );
 };
