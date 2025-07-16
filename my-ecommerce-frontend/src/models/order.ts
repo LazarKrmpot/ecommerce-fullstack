@@ -10,6 +10,7 @@ export interface OrderedItem {
     };
     name: string;
     description: string;
+    stock: number;
     price: number;
     rating: number;
     _id: string;

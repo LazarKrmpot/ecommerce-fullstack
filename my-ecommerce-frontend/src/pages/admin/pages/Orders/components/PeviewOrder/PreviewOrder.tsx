@@ -6,6 +6,7 @@ import {
   getShippingConfig,
   getStatusConfig,
   formatTimeSinceUpdate,
+  checkItemAvailability,
 } from "../../utils/orderHelpers";
 import {
   Box,
@@ -92,7 +93,7 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
       classNames="mx-auto py-6 md:px-4 px-6 min-w-[90vw] 2xl:min-w-[70vw] max-h-[90vh] overflow-y-auto"
     >
       {/* Header: Status and Date */}
-      <section className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 items-center justify-between mb-6 md:mb-0">
+      <section className="flex flex-col  sm:flex-row space-y-4 sm:space-y-0 items-center justify-between mb-6 md:mb-0">
         <div className="flex items-center w-full sm:w-fit justify-between gap-4">
           <span
             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusClassName}`}
@@ -112,7 +113,7 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
         </div>
       </section>
       {/* Responsive Grid for Main Content */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-2 xl:gap-6">
+      <div className="grid md:grid-cols-[2fr_3fr] gap-6 md:gap-2 xl:gap-6">
         {/* Left Column: Customer Info + Order Summary */}
         <div className="space-y-6 md:space-y-2 xl:space-y-6">
           {/* Customer Information */}
@@ -220,80 +221,93 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
                 }`}
               >
                 <div className="space-y-2">
-                  {order.orderedItems.map((item) => (
-                    <div
-                      key={item.productId._id}
-                      className="flex items-center border-1 shadow-sm justify-between space-x-4 p-2 bg-white rounded-xl"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <img
-                          // src={item.productId.imageUrl}
-                          alt={item.productId.name}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                        <div>
-                          <p className="font-semibold">{item.productId.name}</p>
-                          <p className="text-xs">Quantity: {item.quantity}</p>
+                  {order.orderedItems.map((item) => {
+                    const {
+                      status: itemStatus,
+                      icon: itemStatusIcon,
+                      className: itemStatusClassName,
+                    } = checkItemAvailability(item);
+
+                    return (
+                      <div
+                        key={item.productId._id}
+                        className="flex items-center border-1 shadow-sm justify-between space-x-4 p-2 bg-white rounded-xl"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <img
+                            // src={item.productId.imageUrl}
+                            alt={item.productId.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <div>
+                            <p className="font-semibold">
+                              {item.productId.name}
+                            </p>
+                            <div className="flex h-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                              <p className="text-xs">
+                                Quantity: {item.quantity}{" "}
+                              </p>
+                              <span
+                                className={`text-xs flex items-center gap-1 ${itemStatusClassName}`}
+                              >
+                                {itemStatusIcon}
+                                {itemStatus}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex h-full flex-col justify-between text-right">
+                          <p className="text-l font-bold">
+                            ${item.productId.price * item.quantity}
+                          </p>
+                          <p className="text-xs font-bold text-gray-500">
+                            ${item.productId.price} each
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold">
-                          ${item.productId.price * item.quantity}
-                        </p>
-                        <p className="text-xs font-bold text-gray-500">
-                          ${item.productId.price} each
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </ScrollArea>
 
               <Separator className="my-6" />
-              <section className="space-y-1 mt-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Total Products:</span>
-                  <span className="text-md font-bold">
-                    {order.orderedItems.length}
-                  </span>
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-m font-semibold">Total:</span>
-                  <span className="text-xl font-bold">
-                    ${order.priceToPay.toFixed(2)}
-                  </span>
+              {/* Order summary */}
+              <div className="gap-4 bg-gray-50">
+                <div className="flex gap-2 items-center p-0 mb-4">
+                  <Box />
+                  <span className="font-semibold">Order Summary</span>
                 </div>
-              </section>
-            </CardContent>
-          </Card>
-          {/* Order summary */}
-          <Card className="p-4 gap-4 bg-gray-50">
-            <CardHeader className="flex gap-2 items-center p-0 mb-0">
-              <Box />
-              <span className="font-semibold">Order Summary</span>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div>
-                <p className="text-sm">Items</p>
-                <p className="font-semibold">
-                  {getItemsQuantity(order.orderedItems)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm">Total Amount</p>
-                <p className="font-bold text-xl">
-                  ${order.priceToPay.toFixed(2)}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm">Shipping Method</p>
-                <span
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingClassName}`}
-                >
-                  {shippingIcon}
-                  {shippingLabel}
-                </span>
+                <div className="space-y-4 p-0">
+                  <div>
+                    <p className="text-sm">Products</p>
+                    <p className="font-semibold">
+                      {order.orderedItems.length} Product
+                      {order.orderedItems.length > 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm">Items</p>
+                    <p className="font-semibold">
+                      {getItemsQuantity(order.orderedItems)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm">Total Amount</p>
+                    <p className="font-bold text-xl">
+                      ${order.priceToPay.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm">Shipping Method</p>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingClassName}`}
+                    >
+                      {shippingIcon}
+                      {shippingLabel}
+                    </span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -102,7 +102,6 @@ class ProductWithCategory extends OmitType(Product, [
   'status',
   'isFeatured',
   'currency',
-  'stock',
   'shopId',
 ]) {
   @Exclude()
@@ -126,9 +125,6 @@ class ProductWithCategory extends OmitType(Product, [
 
   @Exclude()
   currency: string;
-
-  @Exclude()
-  stock: number;
 
   @Exclude()
   shopId: Ref<Shop>;

@@ -1,6 +1,7 @@
 import { ShippingMethod } from "@/hooks";
 import { OrderedItem, OrderStatus } from "@/models/order";
 import { CheckCircle, Clock, Package, Truck, XCircle, Zap } from "lucide-react";
+import { ReactNode } from "react";
 
 const getItemsQuantity = (orderedItems: OrderedItem[]) => {
   return `${orderedItems.reduce((total, item) => total + item.quantity, 0)} ${
@@ -88,7 +89,31 @@ const formatTimeSinceUpdate = (
   return `${prefix}just now`;
 };
 
+const checkItemAvailability = (item: OrderedItem) => {
+  const stock = item.productId.stock;
+  let status: string, className: string, icon: ReactNode;
+  if (stock === 0) {
+    icon = <XCircle className="w-3 h-3" />;
+    status = "Out of stock";
+    className = "text-red-600";
+  } else if (stock < item.quantity) {
+    icon = <Clock className="w-3 h-3" />;
+    status = "Low stock";
+    className = "text-yellow-600";
+  } else {
+    icon = <CheckCircle className="w-3 h-3" />;
+    status = "In stock";
+    className = "text-green-600";
+  }
+  return {
+    icon,
+    status,
+    className,
+  };
+};
+
 export {
+  checkItemAvailability,
   getItemsQuantity,
   getStatusConfig,
   getShippingConfig,
