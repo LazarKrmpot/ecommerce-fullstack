@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Drawer,
@@ -26,6 +27,7 @@ interface ResponsiveFormProps {
   customTrigger?: React.ReactNode;
   children: React.ReactNode;
   handleOpenDialog?: () => void;
+  handleClose?: () => void;
   isOpen?: boolean;
   classNames?: string;
   disabled?: boolean;
@@ -39,6 +41,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
   customTrigger,
   children,
   handleOpenDialog,
+  handleClose,
   isOpen = false,
   classNames = "",
   disabled = false,
@@ -73,6 +76,16 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
             {headerChildren}
           </DialogHeader>
           {children}
+          <DialogFooter className="mt-4 md:mt-0 flex w-full justify-end flex-col sm:flex-row items-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className={"transition-all duration-200 w-full sm:w-fit"}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     );

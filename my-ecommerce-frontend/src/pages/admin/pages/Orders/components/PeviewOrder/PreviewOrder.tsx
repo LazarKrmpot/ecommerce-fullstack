@@ -81,16 +81,17 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
   return (
     <ResponsiveForm
       handleOpenDialog={toggleDialog}
+      handleClose={handleClose}
       isOpen={isOpen}
       title="Order Details"
       description={"Order id: " + order._id}
       triggerIcon={triggerIcon}
       headerChildren={headerButton}
-      classNames="mx-auto py-8 px-4 px-6 min-w-[70vw] 2xl:min-w-[50vw] max-h-[90vh] overflow-y-auto"
+      classNames="mx-auto py-6 md:px-4 px-6 min-w-[90vw] 2xl:min-w-[70vw] max-h-[90vh] overflow-y-auto"
     >
       {/* Header: Status and Date */}
-      <section className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+      <section className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 items-center justify-between mb-6 md:mb-0">
+        <div className="flex items-center w-full sm:w-fit justify-between gap-4">
           <span
             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusClassName}`}
           >
@@ -101,7 +102,7 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
             {formatTimeSinceUpdate(order.updatedAt)}
           </span>
         </div>
-        <div className="flex border-1 py-1 px-3 rounded items-center gap-2">
+        <div className="w-full sm:w-fit flex border-1 py-1 px-3 rounded items-center justify-center gap-2">
           <Calendar className="h-4 w-4" />
           <span className="text-sm font-medium">
             {new Date(order.createdAt).toDateString()}
@@ -109,9 +110,9 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
         </div>
       </section>
       {/* Responsive Grid for Main Content */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-2 xl:gap-6">
         {/* Left Column: Customer Info + Order Summary */}
-        <div className="space-y-6">
+        <div className="space-y-6 md:space-y-2 xl:space-y-6">
           {/* Customer Information */}
           <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center">
@@ -127,8 +128,10 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
               <p className="font-semibold">{orderedByUser?.email}</p>
             </div>
             {!order.orderedByUser && (
-              <div className="flex items-center space-x-1 mt-2">
-                <Info className="h-4 w-4" />
+              <div className="flex space-x-1">
+                <div className="h4 w-4">
+                  <Info className="h-4 w-4" />
+                </div>
                 <p className="text-xs text-gray-500 italic">
                   This customer does not have an account in the system.
                 </p>
@@ -137,12 +140,12 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
           </section>
 
           {/* Shipping Information */}
-          <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
+          <section className="space-y-4 bg-gray-50 p-4 min-w-50 rounded-lg">
             <div className="flex items-center">
               <Truck />
               <span className="ml-2 font-semibold">Shipping Information</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {Object.keys(order.deliveryAddress).map((key) => (
                 <div key={key}>
                   <p className="text-sm capitalize">
@@ -199,7 +202,7 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
           </section>
         </div>
         {/* Right Column: Ordered Items + Shipping Info */}
-        <div className="space-y-6">
+        <div className="space-y-6 md:space-y-2 xl:space-y-6">
           {/* Ordered Items */}
           <section className="space-y-4 bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center">
@@ -267,16 +270,6 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
             </div>
           </section>
         </div>
-      </div>
-      <div className="mt-4 md:mt-0 flex w-full justify-end flex-col sm:flex-row items-center">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleClose}
-          className={"transition-all duration-200 w-full sm:w-fit"}
-        >
-          Cancel
-        </Button>
       </div>
     </ResponsiveForm>
   );
