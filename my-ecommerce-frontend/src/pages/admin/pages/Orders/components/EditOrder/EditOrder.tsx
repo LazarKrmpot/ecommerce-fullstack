@@ -6,28 +6,27 @@ import { ShippingMethod } from "@/hooks";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Box } from "lucide-react";
 
+interface EditOrderProps {
+  order: Order;
+  onSave: (updatedOrder: UpdateOrderPayload) => Promise<void>;
+  allInStock: boolean;
+}
 interface UpdateOrderForm {
   status: OrderStatus;
   shippingMethod: ShippingMethod;
 }
 
-const ORDER_STATUS_OPTIONS = [
-  { value: OrderStatus.PENDING, label: "Pending" },
-  { value: OrderStatus.ACCEPTED, label: "Accepted" },
-  { value: OrderStatus.REJECTED, label: "Rejected" },
-  { value: OrderStatus.DELIVERED, label: "Delivered" },
-  { value: OrderStatus.CANCELLED, label: "Cancelled" },
-];
+export const EditOrder = ({ order, onSave, allInStock }: EditOrderProps) => {
+  const ORDER_STATUS_OPTIONS = [
+    { value: OrderStatus.PENDING, label: "Pending", disabled: false },
+    { value: OrderStatus.ACCEPTED, label: "Accepted", disabled: !allInStock },
+    { value: OrderStatus.REJECTED, label: "Rejected", disabled: false },
+    { value: OrderStatus.DELIVERED, label: "Delivered", disabled: !allInStock },
+    { value: OrderStatus.CANCELLED, label: "Cancelled", disabled: false },
+  ];
 
-interface EditOrderProps {
-  order: Order;
-  onSave: (updatedOrder: UpdateOrderPayload) => Promise<void>;
-}
-
-export const EditOrder = ({ order, onSave }: EditOrderProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const initialValues: UpdateOrderForm = {
@@ -97,6 +96,7 @@ export const EditOrder = ({ order, onSave }: EditOrderProps) => {
                   }
                   className="w-full"
                   type="button"
+                  disabled={option.disabled}
                   onClick={() => {
                     setFormData((prev) => ({
                       ...prev,
@@ -109,68 +109,17 @@ export const EditOrder = ({ order, onSave }: EditOrderProps) => {
               ))}
             </div>
           </div>
-          {/* <div className="space-y-2">
-            <Label htmlFor="shippingMethod" className="text-sm font-bold">
-              <Truck className="inline" />
-              Shipping Method
-            </Label>
-            <div className="flex flex-col gap-3">
-              {SHIPPING_METHODS.map((method) => (
-                <label key={method.value} className="relative">
-                  <input
-                    type="radio"
-                    name="shipping"
-                    value={method.value}
-                    checked={formData.shippingMethod === method.value}
-                    onChange={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        shippingMethod: method.value as ShippingMethod,
-                      }))
-                    }
-                    className="sr-only"
-                  />
-                  <div
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                      formData.shippingMethod === method.value
-                        ? "bg-black "
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <div
-                      className={`flex justify-between items-start font-medium text-gray-900 ${
-                        formData.shippingMethod === method.value &&
-                        "text-white border-black"
-                      }`}
-                    >
-                      <p>{method.label}</p>
-                      <p className="text-sm text-gray-500">
-                        ${method.price.toFixed(2)}
-                      </p>
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      {method.description}
-                    </p>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div> */}
         </div>
         <div className="flex items-center justify-end space-x-3 pt-2">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
-            className={cn(
-              "transition-all duration-200",
-              isLoading && "opacity-50"
-            )}
             disabled={isLoading}
+            className={"transition-all duration-200 w-full sm:w-fit"}
           >
             Cancel
           </Button>
-
           <SubmitButton
             label="Save Changes"
             isLoading={isLoading}
@@ -178,6 +127,19 @@ export const EditOrder = ({ order, onSave }: EditOrderProps) => {
           />
         </div>
       </form>
+      {!allInStock && (
+        <section className="mt-4 flex items-start gap-2 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+          <Box className="text-yellow-500 mt-0.5" size={20} />
+          <div>
+            <p className="text-sm font-semibold text-yellow-700">
+              Some items in this order are out of stock.
+            </p>
+            <p className="text-xs text-yellow-700">
+              Please restock items before accepting or delivering this order.
+            </p>
+          </div>
+        </section>
+      )}
     </ResponsiveDialog>
   );
 };

@@ -23,6 +23,7 @@ import { EditOrder } from "./components/EditOrder/EditOrder";
 import { toast } from "sonner";
 import { updateOrder } from "@/services/ordersService";
 import {
+  checkIfItemsInStock,
   formatTimeSinceUpdate,
   getItemsQuantity,
   getShippingConfig,
@@ -125,9 +126,15 @@ export const Orders = () => {
                 const statusConfig = getStatusConfig(order.status);
                 const shippingConfig = getShippingConfig(order.shippingMethod);
                 const orderedByUser = formatOrderedUserInfo(order);
+                const { allInStock } = checkIfItemsInStock(order.orderedItems);
 
                 return (
-                  <TableRow className="text-left" key={order._id}>
+                  <TableRow
+                    className={`text-left ${
+                      !allInStock ? "bg-red-50 hover:bg-red-100" : ""
+                    }`}
+                    key={order._id}
+                  >
                     <TableCell>{order._id}</TableCell>
                     <TableCell>
                       <p className="text-[1.1rem] font-bold">
@@ -164,7 +171,11 @@ export const Orders = () => {
                     <TableCell>
                       <div className="text-right gap-2 flex items-center justify-end">
                         <PreviewOrder order={order} />
-                        <EditOrder order={order} onSave={handleUpdateOrder} />
+                        <EditOrder
+                          allInStock={allInStock}
+                          order={order}
+                          onSave={handleUpdateOrder}
+                        />
                         <Button
                           type="button"
                           onClick={() => onGeneratePDF(order)}

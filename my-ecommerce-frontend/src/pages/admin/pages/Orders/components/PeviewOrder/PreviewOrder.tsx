@@ -71,7 +71,6 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
   return (
     <ResponsiveDialog
       handleOpenDialog={toggleDialog}
-      handleClose={handleClose}
       isOpen={isOpen}
       title="Order Details"
       description={"Order id: " + order._id}
@@ -118,6 +117,16 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
           {/* Ordered Items */}
           <OrderedItemsList order={order} />
         </div>
+      </div>
+      <div className="flex items-center justify-end space-x-3 pt-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleClose}
+          className={"transition-all duration-200 w-full sm:w-fit"}
+        >
+          Cancel
+        </Button>
       </div>
     </ResponsiveDialog>
   );
