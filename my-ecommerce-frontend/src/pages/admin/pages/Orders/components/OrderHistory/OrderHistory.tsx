@@ -20,10 +20,13 @@ export const OrderHistory = ({ order }: OrderHistoryProps) => {
       <ul className=" border-l-2 border-gray-200 dark:border-gray-700 ml-2">
         {order.orderHistory.map((history, idx) => {
           const { label, className, icon } = getStatusConfig(history.status);
+          const isLast = idx === order.orderHistory.length - 1;
 
           return (
             <li
-              className="mb-8 ml-2 items-center space-x-2 flex group transition-transform duration-200 hover:scale-[1.01]"
+              className={`${
+                !isLast ? "mb-4" : ""
+              } ml-2 items-center space-x-2 flex group transition-transform duration-200 hover:scale-[1.01]`}
               key={idx}
             >
               <span
