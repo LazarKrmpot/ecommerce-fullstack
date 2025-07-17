@@ -112,10 +112,21 @@ const checkItemAvailability = (item: OrderedItem) => {
   };
 };
 
+const checkIfItemsInStock = (items: OrderedItem[]) => {
+  const outOfStock = items.filter(
+    (item) => item.productId.stock < item.quantity || item.productId.stock === 0
+  );
+  return {
+    allInStock: outOfStock.length === 0,
+    outOfStock: outOfStock.length > 0 ? outOfStock : null,
+  };
+};
+
 export {
   checkItemAvailability,
   getItemsQuantity,
   getStatusConfig,
   getShippingConfig,
   formatTimeSinceUpdate,
+  checkIfItemsInStock,
 };

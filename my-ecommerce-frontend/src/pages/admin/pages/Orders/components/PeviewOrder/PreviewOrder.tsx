@@ -7,10 +7,12 @@ import {
   getStatusConfig,
   formatTimeSinceUpdate,
   checkItemAvailability,
+  checkIfItemsInStock,
 } from "../../utils/orderHelpers";
 import {
   Box,
   Calendar,
+  CheckCircle,
   Clock,
   Eye,
   History,
@@ -18,6 +20,7 @@ import {
   ShoppingBag,
   Truck,
   User,
+  XCircle,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -65,6 +68,8 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
           order.deliveryAddress.lastName,
         email: order.deliveryAddress.email,
       };
+
+  const { allInStock, outOfStock } = checkIfItemsInStock(order.orderedItems);
 
   const onGeneratePDF = () => {
     generateOrderPDF(order);
@@ -272,43 +277,74 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
 
               <Separator className="my-6" />
 
-              {/* Order summary */}
-              <div className="gap-4 bg-gray-50">
-                <div className="flex gap-2 items-center p-0 mb-4">
-                  <Box />
-                  <span className="font-semibold">Order Summary</span>
+              <section className="flex flex-col sm:flex-row gap-9 sm:gap-4">
+                {/* Order summary */}
+                <div className="gap-4 bg-gray-50 w-[50%]">
+                  <div className="flex gap-2 items-center p-0 mb-4">
+                    <Box />
+                    <span className="font-semibold">Order Summary</span>
+                  </div>
+                  <div className="space-y-4 p-0">
+                    <div>
+                      <p className="text-sm">Products</p>
+                      <p className="font-semibold">
+                        {order.orderedItems.length} Product
+                        {order.orderedItems.length > 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm">Items</p>
+                      <p className="font-semibold">
+                        {getItemsQuantity(order.orderedItems)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm">Total Amount</p>
+                      <p className="font-bold text-xl">
+                        ${order.priceToPay.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm">Shipping Method</p>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingClassName}`}
+                      >
+                        {shippingIcon}
+                        {shippingLabel}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-4 p-0">
-                  <div>
-                    <p className="text-sm">Products</p>
-                    <p className="font-semibold">
-                      {order.orderedItems.length} Product
-                      {order.orderedItems.length > 1 ? "s" : ""}
-                    </p>
+                {/* Ordered items status */}
+                <div className="flex flex-col w-[50%]">
+                  <div className="flex gap-2 p-0 mb-4">
+                    <Info />
+                    <span className="font-semibold">Ordered Items Status</span>
                   </div>
-                  <div>
-                    <p className="text-sm">Items</p>
-                    <p className="font-semibold">
-                      {getItemsQuantity(order.orderedItems)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm">Total Amount</p>
-                    <p className="font-bold text-xl">
-                      ${order.priceToPay.toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm">Shipping Method</p>
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingClassName}`}
-                    >
-                      {shippingIcon}
-                      {shippingLabel}
-                    </span>
+                  <div className="space-y-2">
+                    {allInStock ? (
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-green-100 text-green-800">
+                          <CheckCircle className="w-3 h-3" />
+                          All items are in stock
+                        </span>
+                      </div>
+                    ) : (
+                      outOfStock?.map((item) => (
+                        <div
+                          key={item.productId._id}
+                          className="flex items-center gap-2"
+                        >
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-red-100 text-red-800">
+                            <XCircle className="w-3 h-3" />
+                            {item.productId.name} is out of stock
+                          </span>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
-              </div>
+              </section>
             </CardContent>
           </Card>
         </div>
