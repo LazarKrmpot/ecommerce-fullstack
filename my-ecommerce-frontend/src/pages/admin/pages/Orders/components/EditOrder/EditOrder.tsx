@@ -23,6 +23,12 @@ interface UpdateOrderForm {
 export const EditOrder = ({ order, onSave, allInStock }: EditOrderProps) => {
   const ORDER_STATUS_OPTIONS = [
     { value: OrderStatus.PENDING, label: "Pending", disabled: false },
+    {
+      value: OrderStatus.PROCESSING,
+      label: "Processing",
+      disabled: !allInStock,
+    },
+    { value: OrderStatus.SHIPPED, label: "Shipped", disabled: !allInStock },
     { value: OrderStatus.ACCEPTED, label: "Accepted", disabled: !allInStock },
     { value: OrderStatus.REJECTED, label: "Rejected", disabled: false },
     { value: OrderStatus.DELIVERED, label: "Delivered", disabled: !allInStock },

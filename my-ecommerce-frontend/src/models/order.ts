@@ -80,6 +80,8 @@ export interface CreateOrderRequest {
 export enum OrderStatus {
   PENDING = "pending",
   ACCEPTED = "accepted",
+  PROCESSING = "processing",
+  SHIPPED = "shipped",
   REJECTED = "rejected",
   DELIVERED = "delivered",
   CANCELLED = "cancelled",
