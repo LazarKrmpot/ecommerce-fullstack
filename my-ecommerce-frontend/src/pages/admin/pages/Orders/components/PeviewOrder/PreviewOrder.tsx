@@ -2,31 +2,18 @@ import { ResponsiveDialog } from "@/components/ResponsiveDialog/ResponsiveDialog
 import { Order } from "@/models/order";
 import { useState } from "react";
 import {
-  getItemsQuantity,
-  getShippingConfig,
   getStatusConfig,
   formatTimeSinceUpdate,
-  checkItemAvailability,
-  checkIfItemsInStock,
 } from "../../utils/orderHelpers";
-import {
-  Box,
-  Calendar,
-  CheckCircle,
-  Clock,
-  Eye,
-  History,
-  Info,
-  ShoppingBag,
-  Truck,
-  User,
-  XCircle,
-} from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Calendar, Eye } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { generateOrderPDF } from "../../utils/generateOrderPDF";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
+import { CustomerInformation } from "./CustomerInformation/CustomerInformation";
+import { ShippingInformation } from "./ShippingInformation/ShippingInformation";
+import { OrderUpdateInformation } from "./OrderUpdateinfo/OrderUpdateInformation";
+import { OrderedItemsList } from "./OrderedItemsList/OrderedItemsList";
 
 interface PreviewOrderProps {
   order: Order;
@@ -50,26 +37,21 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
     className: statusClassName,
     icon: statusIcon,
   } = getStatusConfig(order.status);
-  const {
-    label: shippingLabel,
-    className: shippingClassName,
-    icon: shippingIcon,
-  } = getShippingConfig(order.shippingMethod);
 
   const orderedByUser = order.orderedByUser
     ? {
+        account: true,
         name: order.orderedByUser.name,
         email: order.orderedByUser.email,
       }
     : {
+        account: false,
         name:
           order.deliveryAddress.firstName +
           " " +
           order.deliveryAddress.lastName,
         email: order.deliveryAddress.email,
       };
-
-  const { allInStock, outOfStock } = checkIfItemsInStock(order.orderedItems);
 
   const onGeneratePDF = () => {
     generateOrderPDF(order);
@@ -122,231 +104,19 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
         {/* Left Column: Customer Info + Order Summary */}
         <div className="space-y-6 md:space-y-2 xl:space-y-6">
           {/* Customer Information */}
-          <Card className="bg-gray-50 p-4 gap-4">
-            <CardHeader className="flex p-0 items-center mb-0">
-              <User />
-              <span className="font-semibold">Customer Information</span>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div>
-                <p className="text-sm">Name</p>
-                <p className="font-semibold">{orderedByUser?.name}</p>
-              </div>
-              <div>
-                <p className="text-sm">Email</p>
-                <p className="font-semibold">{orderedByUser?.email}</p>
-              </div>
-              {!order.orderedByUser && (
-                <div className="flex space-x-1">
-                  <div className="h4 w-4">
-                    <Info className="h-4 w-4" />
-                  </div>
-                  <p className="text-xs text-gray-500 italic">
-                    This customer does not have an account in the system.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
+          <CustomerInformation orderedByUser={orderedByUser} />
           {/* Shipping Information */}
-          <Card className="bg-gray-50 p-4 gap-4 min-w-50">
-            <CardHeader className="flex gap-2 items-center p-0 mb-0">
-              <Truck />
-              <span className="font-semibold">Shipping Information</span>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                {Object.keys(order.deliveryAddress).map((key) => (
-                  <div key={key}>
-                    <p className="text-sm capitalize">
-                      {key.replace(/([A-Z])/g, " $1")}
-                    </p>
-                    <p className="font-semibold">
-                      {
-                        order.deliveryAddress[
-                          key as keyof typeof order.deliveryAddress
-                        ]
-                      }
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <ShippingInformation deliveryAddress={order.deliveryAddress} />
           {/* Order Update Information */}
-          <Card className="p-4 gap-4 bg-gray-50">
-            <CardHeader className="flex gap-2 items-center p-0 mb-0">
-              <Info />
-              <span className="font-semibold">Order Update Information</span>
-            </CardHeader>
-            <CardContent className="space-y-4 p-0">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-green-100 rounded-lg mt-0.5">
-                  <Clock className="w-4 h-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    Order Created
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(order.createdAt).toDateString()}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg mt-0.5">
-                  <History className="w-4 h-4 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    Last Updated
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {formatTimeSinceUpdate(order.updatedAt)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <OrderUpdateInformation
+            createdAt={order.createdAt}
+            updatedAt={order.updatedAt}
+          />
         </div>
         {/* Right Column: Ordered Items + Shipping Info */}
         <div className="space-y-6 md:space-y-2 xl:space-y-6">
           {/* Ordered Items */}
-          <Card className="p-4 gap-4 bg-gray-50">
-            <CardHeader className="flex gap-2 items-center p-0 mb-0">
-              <ShoppingBag />
-              <span className="font-semibold">Ordered Items</span>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ScrollArea
-                className={`h-[400px] ${
-                  order.orderedItems.length > 5 ? "pr-4" : ""
-                }`}
-              >
-                <div className="space-y-2">
-                  {order.orderedItems.map((item) => {
-                    const {
-                      status: itemStatus,
-                      icon: itemStatusIcon,
-                      className: itemStatusClassName,
-                    } = checkItemAvailability(item);
-
-                    return (
-                      <div
-                        key={item.productId._id}
-                        className="flex items-center border-1 shadow-sm justify-between space-x-4 p-2 bg-white rounded-xl"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <img
-                            // src={item.productId.imageUrl}
-                            alt={item.productId.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                          <div>
-                            <p className="font-semibold">
-                              {item.productId.name}
-                            </p>
-                            <div className="flex h-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                              <p className="text-xs">
-                                Quantity: {item.quantity}{" "}
-                              </p>
-                              <span
-                                className={`text-xs flex items-center gap-1 ${itemStatusClassName}`}
-                              >
-                                {itemStatusIcon}
-                                {itemStatus}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex h-full flex-col justify-between text-right">
-                          <p className="text-l font-bold">
-                            ${item.productId.price * item.quantity}
-                          </p>
-                          <p className="text-xs font-bold text-gray-500">
-                            ${item.productId.price} each
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-
-              <Separator className="my-6" />
-
-              <section className="flex flex-col sm:flex-row gap-9 sm:gap-4">
-                {/* Order summary */}
-                <div className="gap-4 bg-gray-50 w-[50%]">
-                  <div className="flex gap-2 items-center p-0 mb-4">
-                    <Box />
-                    <span className="font-semibold">Order Summary</span>
-                  </div>
-                  <div className="space-y-4 p-0">
-                    <div>
-                      <p className="text-sm">Products</p>
-                      <p className="font-semibold">
-                        {order.orderedItems.length} Product
-                        {order.orderedItems.length > 1 ? "s" : ""}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm">Items</p>
-                      <p className="font-semibold">
-                        {getItemsQuantity(order.orderedItems)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm">Total Amount</p>
-                      <p className="font-bold text-xl">
-                        ${order.priceToPay.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm">Shipping Method</p>
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingClassName}`}
-                      >
-                        {shippingIcon}
-                        {shippingLabel}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                {/* Ordered items status */}
-                <div className="flex flex-col w-[50%]">
-                  <div className="flex gap-2 p-0 mb-4">
-                    <Info />
-                    <span className="font-semibold">Ordered Items Status</span>
-                  </div>
-                  <div className="space-y-2">
-                    {allInStock ? (
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-green-100 text-green-800">
-                          <CheckCircle className="w-3 h-3" />
-                          All items are in stock
-                        </span>
-                      </div>
-                    ) : (
-                      outOfStock?.map((item) => (
-                        <div
-                          key={item.productId._id}
-                          className="flex items-center gap-2"
-                        >
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-red-100 text-red-800">
-                            <XCircle className="w-3 h-3" />
-                            {item.productId.name} is out of stock
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </section>
-            </CardContent>
-          </Card>
+          <OrderedItemsList order={order} />
         </div>
       </div>
     </ResponsiveDialog>
