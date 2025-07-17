@@ -6,6 +6,7 @@ import {
   OrderDeliveryAddress,
   OrderedItem,
   ShippingMethod,
+  OrderStatus,
 } from 'api/models/order.model';
 import { Product } from 'api/models/product.model';
 import { Shop } from 'api/models/shop.model';
@@ -275,7 +276,12 @@ export class OrderController {
       deliveryAddress: finalDeliveryAddress,
       shippingMethod,
       priceToPay: totalPrice,
-      orderedByUser: user?._id,
+      orderHistory: [
+        {
+          status: OrderStatus.PENDING,
+          updatedAt: new Date().toISOString(),
+        },
+      ],
     });
 
     return { message: 'Order created successfully' };
@@ -470,6 +476,13 @@ export class OrderController {
     await this.orderService.updateOneById(id, {
       status: body.status,
       shippingMethod: body.shippingMethod,
+      orderHistory: [
+        ...order.orderHistory,
+        {
+          status: body.status,
+          updatedAt: new Date().toISOString(),
+        },
+      ],
     });
 
     const updatedOrder = await this.orderService.findOneById(id, {

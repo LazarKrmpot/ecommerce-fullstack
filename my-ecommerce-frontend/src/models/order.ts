@@ -18,6 +18,11 @@ export interface OrderedItem {
   quantity: number;
 }
 
+export interface OrderHistory {
+  status: OrderStatus;
+  updatedAt: string;
+}
+
 export interface CreateOrderItem {
   productId: string;
   quantity: number;
@@ -45,6 +50,7 @@ export interface Order {
   };
   status: OrderStatus;
   shippingMethod: ShippingMethod;
+  orderHistory: OrderHistory[];
   priceToPay: number;
   _id: string;
   createdAt: Date;

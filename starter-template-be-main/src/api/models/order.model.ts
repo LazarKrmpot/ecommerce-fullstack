@@ -44,6 +44,18 @@ export class OrderedItem {
   public quantity: number;
 }
 
+export class OrderHistory {
+  @Expose()
+  @IsEnum(OrderStatus)
+  @prop({ type: String, enum: OrderStatus, required: true })
+  public status: OrderStatus;
+
+  @Expose()
+  @IsString()
+  @prop({ type: String, required: true })
+  public updatedAt: string;
+}
+
 export class OrderDeliveryAddress {
   @Expose()
   @IsString()
@@ -121,6 +133,13 @@ export class Order extends Document {
   @Type(() => OrderedItem)
   @prop({ type: () => [OrderedItem], required: true, _id: false })
   public orderedItems: OrderedItem[];
+
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderHistory)
+  @prop({ type: () => [OrderHistory], default: [], _id: false })
+  public orderHistory: OrderHistory[];
 
   @Expose()
   @IsEnum(OrderStatus)

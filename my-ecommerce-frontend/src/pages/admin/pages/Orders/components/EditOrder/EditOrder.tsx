@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Box } from "lucide-react";
 
+import { OrderHistory } from "../OrderHistory/OrderHistory";
+
 interface EditOrderProps {
   order: Order;
   onSave: (updatedOrder: UpdateOrderPayload) => Promise<void>;
@@ -139,6 +141,9 @@ export const EditOrder = ({ order, onSave, allInStock }: EditOrderProps) => {
             </p>
           </div>
         </section>
+      )}
+      {order.orderHistory && order.orderHistory.length > 0 && (
+        <OrderHistory order={order} />
       )}
     </ResponsiveDialog>
   );
