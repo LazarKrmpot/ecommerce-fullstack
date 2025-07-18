@@ -87,6 +87,13 @@ export enum OrderStatus {
   CANCELLED = "cancelled",
 }
 
+export interface OrderStats {
+  totalOrders: number;
+  newOrders: number;
+  completedOrders: number;
+  cancelledOrders: number;
+}
+
 export interface UpdateOrderPayload {
   _id: string;
   status?: OrderStatus;

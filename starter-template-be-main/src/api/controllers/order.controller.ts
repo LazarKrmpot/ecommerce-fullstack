@@ -19,6 +19,7 @@ import { Exclude, Type, plainToInstance } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -212,6 +213,26 @@ class UpdateOrderResponse {
   @Type(() => MyOderType)
   data: MyOderType[];
 }
+
+class OrderStats {
+  @IsNumber()
+  totalOrders: number;
+
+  @IsNumber()
+  newOrders: number;
+
+  @IsNumber()
+  completedOrders: number;
+
+  @IsNumber()
+  cancelledOrders: number;
+}
+
+class OrderStatsResponse {
+  @ValidateNested()
+  @Type(() => OrderStats)
+  data: OrderStats;
+}
 @JsonController('/orders')
 export class OrderController {
   constructor(
@@ -353,6 +374,59 @@ export class OrderController {
       meta,
       message: 'Orders retrieved successfully',
     };
+  }
+
+  @Get('/stats')
+  @ResponseSchema(OrderStatsResponse)
+  @Authorized(Roles.ADMIN)
+  public async getOrderStats() {
+    try {
+      const stats = await this.orderService.aggregate([
+        {
+          $facet: {
+            totalOrders: [
+              {
+                $count: 'count',
+              },
+            ],
+            newOrders: [
+              {
+                $match: {
+                  createdAt: {
+                    $gte: new Date(
+                      new Date().setDate(new Date().getDate() - 30),
+                    ),
+                  },
+                },
+              },
+              { $count: 'count' },
+            ],
+            completedOrders: [
+              { $match: { status: OrderStatus.DELIVERED } },
+              { $count: 'count' },
+            ],
+            cancelledOrders: [
+              { $match: { status: OrderStatus.CANCELLED } },
+              { $count: 'count' },
+            ],
+          },
+        },
+      ]);
+
+      return {
+        data: {
+          totalOrders: stats[0].totalOrders[0]?.count || 0,
+          newOrders: stats[0].newOrders[0]?.count || 0,
+          completedOrders: stats[0].completedOrders[0]?.count || 0,
+          cancelledOrders: stats[0].cancelledOrders[0]?.count || 0,
+        },
+        message: 'Order stats retrieved successfully',
+      };
+    } catch (error) {
+      return {
+        message: 'Error retrieving order stats',
+      };
+    }
   }
 
   @Get('/my-orders')

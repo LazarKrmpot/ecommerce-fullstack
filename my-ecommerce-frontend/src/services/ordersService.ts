@@ -45,3 +45,13 @@ export const updateOrder = async (
     throw error;
   }
 };
+
+export const getOrderStats = async () => {
+  try {
+    const { data } = await api.get("/orders/stats");
+    return data;
+  } catch (error) {
+    console.error("Error fetching order stats:", error);
+    throw error;
+  }
+};

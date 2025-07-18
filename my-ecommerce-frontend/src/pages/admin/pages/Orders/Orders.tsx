@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -32,8 +38,11 @@ import {
 import { PreviewOrder } from "./components/PeviewOrder/PreviewOrder";
 import { Button } from "@/components/ui/button";
 import { generateOrderPDF } from "./utils/generateOrderPDF";
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { OrdersTableSkeleton } from "./components/SkeletonLoading/OrdersTableSkeleton";
+import { useOrderStats } from "@/hooks/orders/useOrderStats";
+import { StatsBlock } from "./components/StatsBlock/StatsBlock";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Orders = () => {
   const [page, setPage] = useState(1);
@@ -44,9 +53,15 @@ export const Orders = () => {
     limit
   );
 
+  const { stats, statsLoading, fetchStats } = useOrderStats();
+
   useEffect(() => {
     fetchOrders();
   }, [page]);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   const handleUpdateOrder = async (
     updatedOrder: UpdateOrderPayload
@@ -100,98 +115,135 @@ export const Orders = () => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Orders</CardTitle>
+      <CardHeader className="flex flex-col flex-start justify-between items-left">
+        <div>
+          <CardTitle className="text-2xl">Orders List</CardTitle>
+          <CardDescription>
+            Here you can find all of your Orders
+          </CardDescription>
+        </div>
+        <Button
+          type="button"
+          variant="default"
+          onClick={() => fetchOrders()}
+          className="transition-all !m-0 duration-200 mt-2 w-full sm:w-fit sm:ml-2"
+        >
+          <Plus /> Add Order
+        </Button>
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <OrdersTableSkeleton />
+        {loading || statsLoading ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="text-left space-y-1 bg-white rounded-lg shadow-sm border border-gray-200 p-4 w-full max-w-sm"
+                >
+                  <Skeleton className="h-4 w-24" />
+                  <div className="flex items-center">
+                    <Skeleton className="h-8 w-16 mr-4" />
+                    <Skeleton className="w-6 h-2 rounded-full" />
+                  </div>
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              ))}
+            </div>
+            <OrdersTableSkeleton />
+          </>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Updated</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Shipping Method</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders?.data?.map((order) => {
-                const statusConfig = getStatusConfig(order.status);
-                const shippingConfig = getShippingConfig(order.shippingMethod);
-                const orderedByUser = formatOrderedUserInfo(order);
-                const { allInStock } = checkIfItemsInStock(order.orderedItems);
+          <>
+            <StatsBlock stats={stats} className="mb-10" />
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order ID</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Updated</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Shipping Method</TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orders?.data?.map((order) => {
+                  const statusConfig = getStatusConfig(order.status);
+                  const shippingConfig = getShippingConfig(
+                    order.shippingMethod
+                  );
+                  const orderedByUser = formatOrderedUserInfo(order);
+                  const { allInStock } = checkIfItemsInStock(
+                    order.orderedItems
+                  );
 
-                return (
-                  <TableRow
-                    className={`text-left ${
-                      !allInStock ? "bg-red-50 hover:bg-red-100" : ""
-                    }`}
-                    key={order._id}
-                  >
-                    <TableCell>{order._id}</TableCell>
-                    <TableCell>
-                      <p className="text-[1.1rem] font-bold">
-                        {orderedByUser.name}
-                      </p>
-                      <p>{orderedByUser.email}</p>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {formatTimeSinceUpdate(order.updatedAt, "short")}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusConfig.className}`}
-                      >
-                        {statusConfig.icon}
-                        {statusConfig.label}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingConfig.className}`}
-                      >
-                        {shippingConfig.icon}
-                        {shippingConfig.label}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {getItemsQuantity(order.orderedItems)}
-                    </TableCell>
-                    <TableCell>${order.priceToPay.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <div className="text-right gap-2 flex items-center justify-end">
-                        <PreviewOrder order={order} />
-                        <EditOrder
-                          allInStock={allInStock}
-                          order={order}
-                          onSave={handleUpdateOrder}
-                        />
-                        <Button
-                          type="button"
-                          onClick={() => onGeneratePDF(order)}
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+                  return (
+                    <TableRow
+                      className={`text-left ${
+                        !allInStock ? "bg-red-50 hover:bg-red-100" : ""
+                      }`}
+                      key={order._id}
+                    >
+                      <TableCell>{order._id}</TableCell>
+                      <TableCell>
+                        <p className="text-[1.1rem] font-bold">
+                          {orderedByUser.name}
+                        </p>
+                        <p>{orderedByUser.email}</p>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {formatTimeSinceUpdate(order.updatedAt, "short")}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusConfig.className}`}
                         >
-                          <Download />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                          {statusConfig.icon}
+                          {statusConfig.label}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${shippingConfig.className}`}
+                        >
+                          {shippingConfig.icon}
+                          {shippingConfig.label}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {getItemsQuantity(order.orderedItems)}
+                      </TableCell>
+                      <TableCell>${order.priceToPay.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <div className="text-right gap-2 flex items-center justify-end">
+                          <PreviewOrder order={order} />
+                          <EditOrder
+                            allInStock={allInStock}
+                            order={order}
+                            onSave={handleUpdateOrder}
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => onGeneratePDF(order)}
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+                          >
+                            <Download />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </>
         )}
         {orders?.meta?.pagination?.totalPages > 1 &&
           orders?.data?.length > 0 && (
