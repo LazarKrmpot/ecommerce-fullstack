@@ -21,16 +21,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FilterBar } from "./components/FilterBar/FilterBar";
 import { Button } from "@/components/ui/button";
 import { OrdersTable } from "./components/OrdersTable/OrdersTable";
+import { Separator } from "@/components/ui/separator";
 
 export const Orders = () => {
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(20);
+  const [perPage, setPerPage] = useState(10);
   const [currentFilter, setCurrentFilter] = useState<string>("");
 
   const { orders, fetchOrders, setOrders, loading } = useOrdersData(
     page,
     perPage,
-    currentFilter === "" ? "" : `status::eq::${currentFilter}`
+    currentFilter
   );
 
   const { stats, statsLoading, fetchStats } = useOrderStats();
@@ -123,44 +124,45 @@ export const Orders = () => {
           <Plus /> Add Order
         </Button>
       </CardHeader>
-      <CardContent>
-        <>
-          {statsLoading ? (
-            <div className="grid grid-cols-1 grid-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="text-left space-y-1 bg-white rounded-lg shadow-sm border border-gray-200 p-4 w-full max-w-sm"
-                >
-                  <Skeleton className="h-4 w-24" />
-                  <div className="flex items-center">
-                    <Skeleton className="h-8 w-16 mr-4" />
-                    <Skeleton className="w-6 h-2 rounded-full" />
-                  </div>
-                  <Skeleton className="h-4 w-32" />
+      <CardContent className="space-y-4">
+        {statsLoading ? (
+          <div className="grid grid-cols-1 grid-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="text-left space-y-1 bg-white rounded-lg shadow-sm border border-gray-200 p-4 w-full max-w-sm"
+              >
+                <Skeleton className="h-4 w-24" />
+                <div className="flex items-center">
+                  <Skeleton className="h-8 w-16 mr-4" />
+                  <Skeleton className="w-6 h-2 rounded-full" />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <StatsBlock stats={memoizedStats} className="mb-10" />
-          )}
-          <FilterBar setFilter={setCurrentFilter} filter={currentFilter} />
-          {loading ? (
-            <>
-              <OrdersTableSkeleton />
-            </>
-          ) : (
-            <>
-              <OrdersTable
-                orders={orders}
-                loading={loading}
-                onUpdateOrder={handleUpdateOrder}
-                onGeneratePDF={onGeneratePDF}
-                formatOrderedUserInfo={formatOrderedUserInfo}
-              />
-            </>
-          )}
-          {orders?.meta?.pagination?.totalPages > 1 && (
+                <Skeleton className="h-4 w-32" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <StatsBlock stats={memoizedStats} />
+        )}
+        <Separator className="" />
+        <FilterBar setFilter={setCurrentFilter} />
+        {loading ? (
+          <>
+            <OrdersTableSkeleton />
+          </>
+        ) : (
+          <>
+            <OrdersTable
+              orders={orders}
+              loading={loading}
+              onUpdateOrder={handleUpdateOrder}
+              onGeneratePDF={onGeneratePDF}
+              formatOrderedUserInfo={formatOrderedUserInfo}
+            />
+          </>
+        )}
+        {orders?.meta?.pagination?.totalPages > 4 &&
+          orders.meta.pagination.totalResults > 4 && (
             <Pagination
               currentPage={page}
               totalPages={orders.meta.pagination.totalPages}
@@ -169,7 +171,6 @@ export const Orders = () => {
               onPerPageChange={handlePerPageChange}
             />
           )}
-        </>
       </CardContent>
     </Card>
   );

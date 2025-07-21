@@ -69,12 +69,16 @@ export async function modelFilter<T, V>({
     filters.forEach((filter) => {
       const [key, operator, value] = filter.split('::');
 
+      const isDateField = key === 'createdAt' || key === 'updatedAt';
+
       switch (operator) {
         case 'regex':
           addFilter(key, { $regex: value, $options: 'i' });
           break;
         case 'eq':
-          addFilter(key, { $eq: parsedValue(value) });
+          addFilter(key, {
+            $eq: isDateField ? new Date(value) : parsedValue(value),
+          });
           break;
         case 'neq':
           addFilter(key, { $ne: value });
@@ -83,16 +87,24 @@ export async function modelFilter<T, V>({
           addFilter(key, { $exists: JSON.parse(value) });
           break;
         case 'gt':
-          addFilter(key, { $gt: parseFloat(value) });
+          addFilter(key, {
+            $gt: isDateField ? new Date(value) : parseFloat(value),
+          });
           break;
         case 'gte':
-          addFilter(key, { $gte: parseFloat(value) });
+          addFilter(key, {
+            $gte: isDateField ? new Date(value) : parseFloat(value),
+          });
           break;
         case 'lt':
-          addFilter(key, { $lt: parseFloat(value) });
+          addFilter(key, {
+            $lt: isDateField ? new Date(value) : parseFloat(value),
+          });
           break;
         case 'lte':
-          addFilter(key, { $lte: parseFloat(value) });
+          addFilter(key, {
+            $lte: isDateField ? new Date(value) : parseFloat(value),
+          });
           break;
         case 'in':
           addFilter(key, { $in: value.split(',') });
