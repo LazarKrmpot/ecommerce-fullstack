@@ -87,6 +87,7 @@ export const EditOrder = ({ order, onSave, allInStock }: EditOrderProps) => {
       isOpen={isOpen}
       title="Update Order"
       description={"Order id: " + order._id}
+      classNames="mx-auto py-6 md:px-4 px-6 2xl:min-w-[70vw] max-h-[90vh] overflow-y-auto"
     >
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="space-y-10">

@@ -35,28 +35,21 @@ import {
   useProductSearch,
   useProductStats,
 } from "@/hooks";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import Pagination from "@/components/CustomPagination";
 import { UploadProducts } from "./components/UploadProducts/UploadProducts";
 import { createCategory } from "@/services/categoriesService";
 import { CategoryRequest } from "@/models/category";
 
 export const Products = () => {
   const [page, setPage] = useState(1);
-  const limit = 20;
+  const [perPage, setPerPage] = useState(20);
   const [activeFilter, setActiveFilter] = useState<ProductFilter>(
     ProductFilter.ALL
   );
 
   const { products, fetchProducts, setProducts, loading } = useProductsData(
     page,
-    limit
+    perPage
   );
   const { stats, statsLoading, fetchStats } = useProductStats();
   const { categories, setCategories, isLoadingCategories, fetchCategories } =
@@ -68,7 +61,7 @@ export const Products = () => {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, [page]);
+  }, [page, perPage]);
 
   useEffect(() => {
     fetchStats();
@@ -205,6 +198,15 @@ export const Products = () => {
     }
   };
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPerPage(newPerPage);
+    setPage(1);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -308,56 +310,15 @@ export const Products = () => {
             </TableBody>
           </Table>
         )}
-        {products?.meta?.pagination?.totalPages > 1 &&
-          products?.data?.length > 0 && (
-            <Pagination className="mt-4">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    className={
-                      page === 1
-                        ? "text-black pointer-events-none opacity-50"
-                        : "text-black"
-                    }
-                  />
-                </PaginationItem>
-
-                {Array.from(
-                  { length: products.meta.pagination.totalPages },
-                  (_, index) => (
-                    <PaginationItem key={index}>
-                      <PaginationLink
-                        onClick={() => setPage(index + 1)}
-                        className={`px-3 py-1 rounded-md ${
-                          page === index + 1
-                            ? "bg-primary text-white"
-                            : "hover:bg-muted text-black"
-                        }`}
-                      >
-                        {index + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-                )}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() =>
-                      setPage((prev) =>
-                        Math.min(prev + 1, products.meta.pagination.totalPages)
-                      )
-                    }
-                    className={
-                      page === products.meta.pagination.totalPages
-                        ? "text-black pointer-events-none opacity-50"
-                        : "text-black"
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
+        {products?.meta?.pagination?.totalPages > 1 && (
+          <Pagination
+            currentPage={page}
+            totalPages={products.meta.pagination.totalPages}
+            onPageChange={handlePageChange}
+            perPage={perPage}
+            onPerPageChange={handlePerPageChange}
+          />
+        )}
       </CardContent>
     </Card>
   );

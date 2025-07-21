@@ -3,6 +3,16 @@ import { OrderedItem, OrderStatus } from "@/models/order";
 import { CheckCircle, Clock, Package, Truck, XCircle, Zap } from "lucide-react";
 import { ReactNode } from "react";
 
+const filterOptions = [
+  { value: "pending", label: "Pending Orders" },
+  { value: "processing", label: "Processing Orders" },
+  { value: "shipped", label: "Shipped Orders" },
+  { value: "delivered", label: "Delivered Orders" },
+  { value: "cancelled", label: "Cancelled Orders" },
+  { value: "rejected", label: "Rejected Orders" },
+  { value: "accepted", label: "Accepted Orders" },
+];
+
 const getItemsQuantity = (orderedItems: OrderedItem[]) => {
   return `${orderedItems.reduce((total, item) => total + item.quantity, 0)} ${
     orderedItems.length > 1 ? "items" : "item"
@@ -133,6 +143,7 @@ const checkIfItemsInStock = (items: OrderedItem[]) => {
 };
 
 export {
+  filterOptions,
   checkItemAvailability,
   getItemsQuantity,
   getStatusConfig,

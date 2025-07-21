@@ -1,8 +1,8 @@
 import { OrderResponse } from "@/models/order";
 import { getOrders } from "@/services/ordersService";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
-export const useOrdersData = (page: number, limit: number) => {
+export const useOrdersData = (page: number, limit: number, filter: string) => {
   const [orders, setOrders] = useState<OrderResponse>({
     data: [],
     meta: {
@@ -17,17 +17,17 @@ export const useOrdersData = (page: number, limit: number) => {
   });
   const [loading, setLoading] = useState(true);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await getOrders(page, limit);
+      const response = await getOrders(page, limit, filter);
       setOrders(response);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, limit, filter]);
 
   return { orders, fetchOrders, setOrders, loading };
 };

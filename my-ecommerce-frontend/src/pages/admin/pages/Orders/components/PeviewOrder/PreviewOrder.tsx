@@ -76,7 +76,7 @@ export const PreviewOrder = ({ order }: PreviewOrderProps) => {
       description={"Order id: " + order._id}
       triggerIcon={triggerIcon}
       headerChildren={headerButton}
-      classNames="mx-auto py-6 md:px-4 px-6 min-w-[90vw] 2xl:min-w-[70vw] max-h-[90vh] overflow-y-auto"
+      classNames="mx-auto py-6 md:px-4 px-6  min-w-[90vw] 2xl:min-w-[70vw] max-h-[90vh] overflow-y-auto"
     >
       {/* Header: Status and Date */}
       <section className="flex flex-col  sm:flex-row space-y-4 sm:space-y-0 items-center justify-between mb-6 md:mb-0">

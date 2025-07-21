@@ -1,24 +1,25 @@
 import ProductCard from "@/components/ProductCard";
 import { useProductsData } from "@/hooks";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-
+import Pagination from "@/components/CustomPagination"; // Updated import
 import React, { useEffect, useState } from "react";
 
 const Products: React.FC = () => {
   const [page, setPage] = useState(1);
-  const limit = 20;
-  const { products, fetchProducts, loading } = useProductsData(page, limit);
+  const [perPage, setPerPage] = useState(20);
+  const { products, fetchProducts, loading } = useProductsData(page, perPage);
 
   useEffect(() => {
     fetchProducts();
-  }, [page]);
+  }, [page, perPage]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPerPage(newPerPage);
+    setPage(1); // Reset to first page when perPage changes
+  };
 
   return (
     <div className="space-y-8 md:space-y-12  my-5">
@@ -40,56 +41,15 @@ const Products: React.FC = () => {
           No products found.
         </div>
       )}
-      {products?.meta?.pagination?.totalPages > 1 &&
-        products?.data?.length > 0 && (
-          <Pagination className="mt-4">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  className={
-                    page === 1
-                      ? "text-black pointer-events-none opacity-50"
-                      : "text-black"
-                  }
-                />
-              </PaginationItem>
-
-              {Array.from(
-                { length: products.meta.pagination.totalPages },
-                (_, index) => (
-                  <PaginationItem key={index}>
-                    <PaginationLink
-                      onClick={() => setPage(index + 1)}
-                      className={`px-3 py-1 rounded-md ${
-                        page === index + 1
-                          ? "bg-primary text-white"
-                          : "hover:bg-muted text-black"
-                      }`}
-                    >
-                      {index + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
-              )}
-
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() =>
-                    setPage((prev) =>
-                      Math.min(prev + 1, products.meta.pagination.totalPages)
-                    )
-                  }
-                  className={
-                    page === products.meta.pagination.totalPages
-                      ? "text-black pointer-events-none opacity-50"
-                      : "text-black"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        )}
+      {products?.meta?.pagination?.totalPages > 1 && (
+        <Pagination
+          currentPage={page}
+          totalPages={products.meta.pagination.totalPages}
+          onPageChange={handlePageChange}
+          perPage={perPage}
+          onPerPageChange={handlePerPageChange}
+        />
+      )}
     </div>
   );
 };

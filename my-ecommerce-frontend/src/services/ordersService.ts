@@ -1,10 +1,10 @@
 import { CreateOrderRequest, UpdateOrderPayload } from "@/models/order";
 import api from "./api";
 
-export const getOrders = async (page = 1, limit = 10) => {
+export const getOrders = async (page = 1, limit = 10, filter = "") => {
   try {
     const { data } = await api.get("/orders", {
-      params: { page, limit },
+      params: { page, limit, filter },
     });
     return { data: data.data, meta: data.meta, message: data.message };
   } catch (error) {

@@ -6,8 +6,6 @@ interface StatsBlockProps {
 }
 
 export const StatsBlock = ({ stats, className }: StatsBlockProps) => {
-  console.log("StatsBlock stats:", stats);
-
   const statsInfo = [
     {
       value: stats.totalOrders,
@@ -33,12 +31,12 @@ export const StatsBlock = ({ stats, className }: StatsBlockProps) => {
 
   return (
     <div
-      className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ${className}`}
+      className={`grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ${className}`}
     >
       {statsInfo.map((info, key) => (
         <div
           key={key}
-          className="text-left bg-white rounded-lg shadow-sm border border-gray-200 p-4 w-full max-w-sm"
+          className="text-left bg-white rounded-lg shadow-sm border border-gray-200 p-4 w-full"
         >
           <h3 className="text-gray-600 text-sm font-medium">{info.label}</h3>
 
