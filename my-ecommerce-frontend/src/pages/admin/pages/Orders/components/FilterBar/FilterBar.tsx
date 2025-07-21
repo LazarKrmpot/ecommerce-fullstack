@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { FilterIcon } from "lucide-react";
 
 interface FilterBarProps {
   setFilter: (filter: string) => void;
@@ -104,10 +105,11 @@ export const FilterBar = ({ setFilter }: FilterBarProps) => {
                 />
                 <div className="flex flex-col lg:flex-row gap-2">
                   <Button
-                    variant="outline"
+                    variant="default"
                     onClick={handleApplyFilters}
-                    className="w-full"
+                    disabled={!status && !shippingMethod && !dateRange}
                   >
+                    <FilterIcon className="h-4 w-4" />
                     Apply Filters
                   </Button>
                   <Button
@@ -162,7 +164,12 @@ export const FilterBar = ({ setFilter }: FilterBarProps) => {
           />
         </div>
         <div className="flex flex-col lg:flex-row gap-2">
-          <Button variant="outline" onClick={handleApplyFilters}>
+          <Button
+            variant="default"
+            onClick={handleApplyFilters}
+            disabled={!status && !shippingMethod && !dateRange}
+          >
+            <FilterIcon className="h-4 w-4" />
             Apply Filters
           </Button>
           <Button variant="outline" onClick={handleResetFilters}>
