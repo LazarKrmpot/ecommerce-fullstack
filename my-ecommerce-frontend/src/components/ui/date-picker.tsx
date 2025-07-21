@@ -26,7 +26,7 @@ export function DatePicker({
 }: DatePickerProps) {
   return (
     <Popover>
-      <PopoverTrigger className="w-full md:w-[180px]" asChild>
+      <PopoverTrigger className="w-full md:w-fit" asChild>
         <Button
           variant={"outline"}
           className={cn(
@@ -34,7 +34,7 @@ export function DatePicker({
             !date && "text-muted-foreground"
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <CalendarIcon className="h-4 w-4" />
           {date?.from ? (
             date.to ? (
               <>

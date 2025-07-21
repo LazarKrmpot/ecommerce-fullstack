@@ -63,7 +63,7 @@ export const FilterBar = ({ setFilter }: FilterBarProps) => {
           className="border shadow rounded-md"
         >
           <AccordionItem value="filters" className="px-4">
-            <AccordionTrigger>Filters</AccordionTrigger>
+            <AccordionTrigger className="py-3">Filters</AccordionTrigger>
             <AccordionContent>
               <div className="flex flex-col gap-2 w-full">
                 <Select value={status} onValueChange={setStatus}>
@@ -125,9 +125,9 @@ export const FilterBar = ({ setFilter }: FilterBarProps) => {
       </div>
       {/* Normal layout for md+ */}
       <div className="hidden md:flex flex-col mb-2 md:flex-row justify-between space-y-4 lg:space-y-0">
-        <div className="flex flex-col lg:flex-row gap-2 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full md:w-[180px]">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Order Status" />
             </SelectTrigger>
             <SelectContent>
@@ -142,7 +142,7 @@ export const FilterBar = ({ setFilter }: FilterBarProps) => {
             </SelectContent>
           </Select>
           <Select value={shippingMethod} onValueChange={setShippingMethod}>
-            <SelectTrigger className="w-full md:w-[180px]">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Shipping Method" />
             </SelectTrigger>
             <SelectContent>
