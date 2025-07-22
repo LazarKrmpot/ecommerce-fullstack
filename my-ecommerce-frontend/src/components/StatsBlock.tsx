@@ -1,37 +1,19 @@
-import { OrderStats } from "@/models/order";
+interface StatInfo {
+  value: number;
+  label: string;
+  color: string;
+  type?: number | string;
+}
 
 interface StatsBlockProps {
-  stats: OrderStats;
+  statsInfo: StatInfo[];
   className?: string;
 }
 
-export const StatsBlock = ({ stats, className }: StatsBlockProps) => {
-  const statsInfo = [
-    {
-      value: stats.totalOrders,
-      label: "Total Orders",
-      color: "bg-indigo-300",
-    },
-    {
-      value: stats.newOrders,
-      label: "New Orders",
-      color: "bg-yellow-300",
-    },
-    {
-      value: stats.completedOrders,
-      label: "Completed Orders",
-      color: "bg-green-300",
-    },
-    {
-      value: stats.cancelledOrders,
-      label: "Cancelled Orders",
-      color: "bg-red-300",
-    },
-  ];
-
+export const StatsBlock = ({ statsInfo, className }: StatsBlockProps) => {
   return (
     <div
-      className={`grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ${className}`}
+      className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ${className}`}
     >
       {statsInfo.map((info, key) => (
         <div

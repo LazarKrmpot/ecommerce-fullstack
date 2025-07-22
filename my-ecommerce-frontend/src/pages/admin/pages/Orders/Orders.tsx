@@ -16,7 +16,7 @@ import { generateOrderPDF } from "./utils/generateOrderPDF";
 import { Plus } from "lucide-react";
 import { OrdersTableSkeleton } from "./components/SkeletonLoading/OrdersTableSkeleton";
 import { useOrderStats } from "@/hooks/orders/useOrderStats";
-import { StatsBlock } from "./components/StatsBlock/StatsBlock";
+import { StatsBlock } from "@/components/StatsBlock";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FilterBar } from "./components/FilterBar/FilterBar";
 import { Button } from "@/components/ui/button";
@@ -95,7 +95,31 @@ export const Orders = () => {
     generateOrderPDF(order);
   }, []);
 
-  const memoizedStats = useMemo(() => stats, [stats]);
+  const memoizedStatsInfo = useMemo(
+    () => [
+      {
+        value: stats?.totalOrders || 0,
+        label: "Total Orders",
+        color: "bg-indigo-300",
+      },
+      {
+        value: stats?.newOrders || 0,
+        label: "New Orders",
+        color: "bg-yellow-300",
+      },
+      {
+        value: stats?.completedOrders || 0,
+        label: "Completed Orders",
+        color: "bg-green-300",
+      },
+      {
+        value: stats?.cancelledOrders || 0,
+        label: "Cancelled Orders",
+        color: "bg-red-300",
+      },
+    ],
+    [stats]
+  );
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -142,7 +166,7 @@ export const Orders = () => {
             ))}
           </div>
         ) : (
-          <StatsBlock stats={memoizedStats} />
+          <StatsBlock statsInfo={memoizedStatsInfo} />
         )}
         <Separator className="" />
         <FilterBar setFilter={setCurrentFilter} />

@@ -1,140 +1,90 @@
+import { StatsBlock } from "@/components/StatsBlock";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import {
-  Users,
-  Package,
-  ShoppingCart,
-  Activity,
-  BarChart3,
-  AlertCircle,
-} from "lucide-react";
-import { User } from "@/models/user";
-import { ProductsResponse } from "@/models/product";
+import { useOverview } from "@/hooks/Dashboard/useOverview";
+import { Bell, Calendar } from "lucide-react";
+import { useEffect, useMemo } from "react";
 
-interface OverviewProps {
-  users: User[];
-  products: ProductsResponse;
-  loading: boolean;
-}
+export const Overview = () => {
+  const { loading, overviewData, fetchOverviewData } = useOverview();
 
-export const Overview = ({ users, products, loading }: OverviewProps) => {
-  const stats = [
-    {
-      title: "Total Users",
-      value: users.length,
-      icon: Users,
-      description: "Active users in the system",
-    },
-    {
-      title: "Total Products",
-      value: products.data.length,
-      icon: Package,
-      description: "Products in inventory",
-    },
-    {
-      title: "Total Orders",
-      value: "0",
-      icon: ShoppingCart,
-      description: "Orders this month",
-    },
-    {
-      title: "System Status",
-      value: "Online",
-      icon: Activity,
-      description: "All systems operational",
-    },
-  ];
+  const statsInfo = useMemo(
+    () => [
+      {
+        value: overviewData?.revenue ?? 0,
+        label: "Total Revenue",
+        color: "bg-green-500",
+      },
+      {
+        value: overviewData?.orders.total ?? 0,
+        label: "Product Sales",
+        color: "bg-blue-500",
+      },
+      {
+        value: overviewData?.orders.productsSold ?? 0,
+        label: "Completed Orders",
+        color: "bg-purple-500",
+      },
+      {
+        value: overviewData?.orders.canceled ?? 0,
+        label: "Canceled Orders",
+        color: "bg-red-500",
+      },
+    ],
+    [overviewData]
+  );
 
-  console.log("Users:", users);
+  useEffect(() => {
+    fetchOverviewData();
+  }, []);
+
+  console.log("Overview Data:", statsInfo);
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.description}
+    <Card>
+      <CardHeader>
+        <CardTitle className="">
+          <div className="flex items-start justify-between">
+            <section className="flex flex-col justify-center items-start space-y-2">
+              <p className="text-2xl">Welcome Back!</p>
+              <p className="text-sm font-semibold text-muted-foreground">
+                Manage your e-commerce platform efficiently
               </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px]">
-              {loading ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {users.slice(0, 5).map((user) => (
-                    <div key={user._id} className="flex items-center space-x-4">
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {user.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {user.email}
-                        </p>
-                      </div>
-                      <Badge variant="outline">{user.role}</Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>System Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <BarChart3 className="h-4 w-4 text-green-500" />
-                  <span>API Status</span>
-                </div>
-                <Badge variant="default">Online</Badge>
+            </section>
+            <section className="flex items-center space-x-4">
+              <div className="shadow rounded-2xl w-fit p-2 flex items-center justify-center">
+                <Calendar className="mr-2" />
+                {`${new Date().getDate()} ${new Date().toLocaleString(
+                  undefined,
+                  { month: "long" }
+                )}`}
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Activity className="h-4 w-4 text-green-500" />
-                  <span>Database</span>
-                </div>
-                <Badge variant="default">Online</Badge>
+              <div className="shadow rounded-full w-fit p-2 flex items-center justify-center">
+                <Bell />
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <AlertCircle className="h-4 w-4 text-yellow-500" />
-                  <span>Storage</span>
-                </div>
-                <Badge variant="secondary">75% Used</Badge>
+            </section>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ">
+            {statsInfo.map((_, idx) => (
+              <div
+                key={idx}
+                className="text-left bg-white rounded-lg shadow-sm border border-gray-200 p-4 w-full"
+                style={{ minWidth: 0 }}
+              >
+                <Skeleton className="h-8 w-28 mb-2" />
+                <Skeleton className="w-6 h-2 mb-2 rounded-full" />
+                <Skeleton className="h-5 w-32" />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+            ))}
+          </div>
+        ) : (
+          <StatsBlock statsInfo={statsInfo} />
+        )}
+      </CardContent>
+    </Card>
   );
 };

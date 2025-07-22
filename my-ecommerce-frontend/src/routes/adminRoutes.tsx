@@ -8,12 +8,7 @@ import { Route, Routes } from "react-router-dom";
 export const AdminRoutes = () => {
   return (
     <Routes>
-      {/* <Route
-        path=""
-        element={
-          <Overview users={users} products={products} loading={loading} />
-        }
-      /> */}
+      <Route index element={<Overview />} />
       <Route path={ROUTES.ADMIN.RELATIVE.USERS} element={<Users />} />
       <Route path={ROUTES.ADMIN.RELATIVE.PRODUCTS} element={<Products />} />
       <Route path={ROUTES.ADMIN.RELATIVE.ORDERS} element={<Orders />} />
