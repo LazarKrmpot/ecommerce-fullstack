@@ -148,7 +148,7 @@ export const Orders = () => {
           <Plus /> Add Order
         </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent>
         {statsLoading ? (
           <div className="grid grid-cols-1 grid-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
             {Array.from({ length: 4 }).map((_, idx) => (

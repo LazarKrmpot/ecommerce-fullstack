@@ -9,3 +9,12 @@ export const getOverview = async () => {
     throw error;
   }
 };
+export const getAnalytics = async () => {
+  try {
+    const { data } = await api.get("/dashboard/analytics");
+    return data.data;
+  } catch (error) {
+    console.error("Error fetching analytics data:", error);
+    throw error;
+  }
+};

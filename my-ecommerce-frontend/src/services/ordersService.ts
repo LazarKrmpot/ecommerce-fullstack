@@ -55,3 +55,13 @@ export const getOrderStats = async () => {
     throw error;
   }
 };
+
+export const getThisWeekOrders = async () => {
+  try {
+    const { data } = await api.get("/orders/this-week");
+    return data;
+  } catch (error) {
+    console.error("Error fetching this week's orders:", error);
+    throw error;
+  }
+};

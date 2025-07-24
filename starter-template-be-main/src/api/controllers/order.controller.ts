@@ -160,7 +160,10 @@ class OrderType extends OmitType(Order, ['orderedItems', 'orderedByUser']) {
   orderedItems: PopulatedOrderedItem[];
 }
 
-class MyOderType extends OmitType(Order, ['orderedItems', 'orderedByUser']) {
+export class MyOrderType extends OmitType(Order, [
+  'orderedItems',
+  'orderedByUser',
+]) {
   @Exclude()
   @IsOptional()
   protected_: null;
@@ -188,12 +191,12 @@ class OrdersResponse {
 
 class MyOrdersResponse {
   @ValidateNested({ each: true })
-  @Type(() => MyOderType)
-  data: MyOderType[];
+  @Type(() => MyOrderType)
+  data: MyOrderType[];
 
   @Type(() => FilterQueryParams)
   @ValidateNested()
-  meta: FilterQueryParams<MyOderType[]>;
+  meta: FilterQueryParams<MyOrderType[]>;
 
   @IsString()
   message: string;
@@ -210,8 +213,8 @@ class UpdateOrderResponse {
   message: string;
 
   @ValidateNested({ each: true })
-  @Type(() => MyOderType)
-  data: MyOderType[];
+  @Type(() => MyOrderType)
+  data: MyOrderType[];
 }
 
 class OrderStats {
@@ -429,6 +432,63 @@ export class OrderController {
     }
   }
 
+  @Get('/this-week')
+  @Authorized(Roles.ADMIN)
+  @ResponseSchema(OrdersResponse)
+  public async getThisWeekOrders() {
+    const orders = await this.orderService.find({
+      filter: {
+        createdAt: {
+          $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+        },
+      },
+      sort: { createdAt: -1 },
+      populate: [
+        {
+          path: 'orderedByUser',
+          Model: 'users',
+          type: 'single',
+        },
+      ],
+
+      Model: OrderType,
+    });
+
+    await Promise.all(
+      orders.map(async (order) => {
+        await Promise.all(
+          order.orderedItems?.map(async (item) => {
+            const product = await this.productService.findOneById(
+              item.productId,
+            );
+            if (product) {
+              if (product.categoryId) {
+                const category = await this.categoryService.findOneById(
+                  product.categoryId,
+                );
+                product.categoryId = category;
+              }
+            }
+
+            item.productId = plainToInstance(ProductWithCategory, product);
+          }),
+        );
+      }),
+    );
+
+    if (!orders) {
+      return {
+        data: null,
+        message: 'No recent orders found',
+      };
+    }
+
+    return {
+      data: orders,
+      message: 'Most recent orders retrieved successfully',
+    };
+  }
+
   @Get('/my-orders')
   @Authorized(Object.values(Roles))
   @ResponseSchema(MyOrdersResponse)
@@ -453,7 +513,7 @@ export class OrderController {
       page,
       sort,
       filter: mergedFilter,
-      Model: MyOderType,
+      Model: MyOrderType,
     });
 
     await Promise.all(

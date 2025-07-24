@@ -61,7 +61,5 @@ export const useOverview = (): OverviewData => {
     }
   };
 
-  // Logic to fetch and update overview data would go here
-
   return { loading, overviewData, fetchOverviewData };
 };

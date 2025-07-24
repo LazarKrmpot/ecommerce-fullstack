@@ -3,10 +3,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOverview } from "@/hooks/Dashboard/useOverview";
 import { Bell, Calendar } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { useThisWeekOrders } from "@/hooks/orders/useThisWeekOrders";
+import { ThisWeekOrdersTable } from "./components/ThisWeekOrders/ThisWeekOrders";
+import { Order } from "@/models/order";
+import { generateOrderPDF } from "../Orders/utils/generateOrderPDF";
+import { OrdersTableSkeleton } from "../Orders/components/SkeletonLoading/OrdersTableSkeleton";
+import { Analytics } from "./components/Analytics/Analytics";
+import { UseAnalytics } from "@/hooks/Dashboard/useAnalytics";
 
 export const Overview = () => {
   const { loading, overviewData, fetchOverviewData } = useOverview();
+  const {
+    loading: loadingThisWeek,
+    thisWeekOrders,
+    fetchThisWeekOrders,
+  } = useThisWeekOrders();
+  const {
+    loading: loadingAnalytics,
+    analyticsData,
+    fetchAnalyticsData,
+  } = UseAnalytics();
 
   const statsInfo = useMemo(
     () => [
@@ -34,11 +51,30 @@ export const Overview = () => {
     [overviewData]
   );
 
-  useEffect(() => {
-    fetchOverviewData();
+  const formatOrderedUserInfo = useCallback((order: Order) => {
+    return order.orderedByUser
+      ? {
+          name: order.orderedByUser.name,
+          email: order.orderedByUser.email,
+        }
+      : {
+          name:
+            order.deliveryAddress.firstName +
+            " " +
+            order.deliveryAddress.lastName,
+          email: order.deliveryAddress.email,
+        };
   }, []);
 
-  console.log("Overview Data:", statsInfo);
+  const onGeneratePDF = useCallback((order: Order) => {
+    generateOrderPDF(order);
+  }, []);
+
+  useEffect(() => {
+    fetchOverviewData();
+    fetchThisWeekOrders();
+    fetchAnalyticsData();
+  }, []);
 
   return (
     <Card>
@@ -52,21 +88,23 @@ export const Overview = () => {
               </p>
             </section>
             <section className="flex items-center space-x-4">
-              <div className="shadow rounded-2xl w-fit p-2 flex items-center justify-center">
-                <Calendar className="mr-2" />
-                {`${new Date().getDate()} ${new Date().toLocaleString(
-                  undefined,
-                  { month: "long" }
-                )}`}
+              <div className="shadow rounded-2xl w-fit py-2 px-3 flex items-center justify-center bg-black">
+                <Calendar className="mr-2 w-5 h-5 text-white" />
+                <span className="text-sm text-white">
+                  {`${new Date().getDate()} ${new Date().toLocaleString(
+                    undefined,
+                    { month: "long" }
+                  )}`}
+                </span>
               </div>
-              <div className="shadow rounded-full w-fit p-2 flex items-center justify-center">
-                <Bell />
+              <div className="shadow border rounded-full w-fit p-2 flex items-center justify-center">
+                <Bell className="w-5 h-5" />
               </div>
             </section>
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-8">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ">
             {statsInfo.map((_, idx) => (
@@ -83,6 +121,22 @@ export const Overview = () => {
           </div>
         ) : (
           <StatsBlock statsInfo={statsInfo} />
+        )}
+
+        <Analytics
+          products={analyticsData.products}
+          totalOrders={overviewData.orders.total}
+          totalProducts={overviewData.products.total}
+        />
+
+        {loadingThisWeek ? (
+          <OrdersTableSkeleton />
+        ) : (
+          <ThisWeekOrdersTable
+            orders={thisWeekOrders.data}
+            onGeneratePDF={onGeneratePDF}
+            formatOrderedUserInfo={formatOrderedUserInfo}
+          />
         )}
       </CardContent>
     </Card>
