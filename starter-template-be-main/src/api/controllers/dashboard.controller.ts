@@ -2,7 +2,8 @@ import { Roles } from 'api/models/user.model';
 import { OrderService } from 'api/services/order.service';
 import { ProductService } from 'api/services/product.service';
 import { UserService } from 'api/services/user.service';
-import { IsNumber, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNumber, IsString, ValidateNested } from 'class-validator';
 import { Authorized, Get, JsonController } from 'routing-controllers';
 import { ResponseSchema } from 'routing-controllers-openapi';
 
@@ -39,6 +40,56 @@ class UsersStats {
   total: number;
 }
 
+class WeeklyPendingOrders {
+  @IsNumber()
+  pendingOrders: number;
+
+  @IsString()
+  date: string;
+}
+
+class WeeklyCompletedOrders {
+  @IsNumber()
+  completedOrders: number;
+
+  @IsString()
+  date: string;
+}
+
+class WeeklyCancelledOrders {
+  @IsNumber()
+  cancelledOrders: number;
+
+  @IsString()
+  date: string;
+}
+
+class WeeklyOrdersTotal {
+  @IsNumber()
+  totalOrders: number;
+
+  @IsString()
+  date: string;
+}
+
+class WeeklyOrders {
+  @ValidateNested({ each: true })
+  @Type(() => WeeklyPendingOrders)
+  total: WeeklyOrdersTotal[];
+
+  @ValidateNested({ each: true })
+  @Type(() => WeeklyCompletedOrders)
+  completed: WeeklyCompletedOrders[];
+
+  @ValidateNested({ each: true })
+  @Type(() => WeeklyPendingOrders)
+  pending: WeeklyPendingOrders[];
+
+  @ValidateNested({ each: true })
+  @Type(() => WeeklyCancelledOrders)
+  cancelled: WeeklyCancelledOrders[];
+}
+
 class OverviewResponse {
   @ValidateNested()
   products: ProductsStats;
@@ -51,6 +102,10 @@ class OverviewResponse {
 
   @ValidateNested()
   revenue: number;
+
+  @ValidateNested()
+  @Type(() => WeeklyOrders)
+  weeklyOrders: WeeklyOrders;
 }
 
 class ProductsAnalytics {
@@ -109,6 +164,7 @@ export class DashboardController {
       this.getProductSummary(),
       this.getOrderSummary(),
       this.getUserSummary(),
+      this.getOrdersWeeklySummary(),
     ]);
 
     return {
@@ -117,6 +173,7 @@ export class DashboardController {
         orders: orderOverView,
         users: userOverView,
         revenue: await this.getRevenueSummary(),
+        weeklyOrders: await this.getOrdersWeeklySummary(),
       },
       message: 'Dashboard overview retrieved successfully',
     };
@@ -170,7 +227,6 @@ export class DashboardController {
       productsSold: stats[0].productsSold[0]?.count || 0,
     };
   }
-  // ...existing code...
 
   public async getUserSummary() {
     const stats = await this.userService.aggregate([
@@ -308,6 +364,104 @@ export class DashboardController {
 
     return {
       usersWithAccount,
+    };
+  }
+
+  public async getOrdersWeeklySummary() {
+    // Get the last 7 days
+    const today = new Date();
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }).reverse();
+
+    const stats = await this.orderService.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: last7Days[0],
+            $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Include today
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            date: {
+              $dateToString: {
+                format: '%Y-%m-%d',
+                date: '$createdAt',
+              },
+            },
+            status: '$status',
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: '$_id.date',
+          statuses: {
+            $push: {
+              status: '$_id.status',
+              count: '$count',
+            },
+          },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // Create a map for easy lookup
+    const statsMap = new Map(stats.map((stat) => [stat._id, stat.statuses]));
+
+    // Generate data for each of the last 7 days
+    const dailyOrders = last7Days.map((date) => {
+      const dateStr = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      const dayStatuses = statsMap.get(dateStr) || [];
+
+      let totalOrders = 0;
+      let completedOrders = 0;
+      let pendingOrders = 0;
+      let cancelledOrders = 0;
+
+      dayStatuses.forEach((statusObj: any) => {
+        totalOrders += statusObj.count;
+        if (statusObj.status === 'delivered') completedOrders = statusObj.count;
+        if (statusObj.status === 'pending') pendingOrders = statusObj.count;
+        if (statusObj.status === 'cancelled') cancelledOrders = statusObj.count;
+      });
+
+      return {
+        totalOrders,
+        completedOrders,
+        pendingOrders,
+        cancelledOrders,
+        date: dateStr,
+      };
+    });
+
+    return {
+      total: dailyOrders.map((d) => ({
+        totalOrders: d.totalOrders,
+        date: d.date,
+      })),
+      completed: dailyOrders.map((d) => ({
+        completedOrders: d.completedOrders,
+        date: d.date,
+      })),
+      pending: dailyOrders.map((d) => ({
+        pendingOrders: d.pendingOrders,
+        date: d.date,
+      })),
+      cancelled: dailyOrders.map((d) => ({
+        cancelledOrders: d.cancelledOrders,
+        date: d.date,
+      })),
     };
   }
 }

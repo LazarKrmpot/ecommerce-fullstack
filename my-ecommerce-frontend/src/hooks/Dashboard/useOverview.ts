@@ -1,7 +1,33 @@
 import { getOverview } from "@/services/overviewService";
 import { useState } from "react";
 
-interface StatsInfo {
+interface WeeklyPendingOrders {
+  pendingOrders: number;
+  date: string;
+}
+
+interface WeeklyCompletedOrders {
+  completedOrders: number;
+  date: string;
+}
+
+interface WeeklyCancelledOrders {
+  cancelledOrders: number;
+  date: string;
+}
+
+interface WeeklyOrdersTotal {
+  totalOrders: number;
+  date: string;
+}
+export interface WeeklySales {
+  total: WeeklyOrdersTotal[];
+  completed: WeeklyCompletedOrders[];
+  pending: WeeklyPendingOrders[];
+  cancelled: WeeklyCancelledOrders[];
+}
+
+export interface StatsInfo {
   products: {
     total: number;
     lowStock: number;
@@ -9,7 +35,7 @@ interface StatsInfo {
   };
   orders: {
     total: number;
-    canceled: number;
+    cancelled: number;
     pending: number;
     completed: number;
     productsSold: number;
@@ -19,6 +45,7 @@ interface StatsInfo {
     customers: number;
   };
   revenue: number;
+  weeklyOrders: WeeklySales;
 }
 
 interface OverviewData {
@@ -38,7 +65,7 @@ export const useOverview = (): OverviewData => {
     orders: {
       total: 0,
       pending: 0,
-      canceled: 0,
+      cancelled: 0,
       completed: 0,
       productsSold: 0,
     },
@@ -47,6 +74,12 @@ export const useOverview = (): OverviewData => {
       customers: 0,
     },
     revenue: 0,
+    weeklyOrders: {
+      total: [],
+      completed: [],
+      pending: [],
+      cancelled: [],
+    },
   });
 
   const fetchOverviewData = async () => {

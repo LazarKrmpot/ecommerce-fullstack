@@ -4,9 +4,9 @@ import { Category } from 'api/models/category.model';
 import {
   Order,
   OrderDeliveryAddress,
+  OrderStatus,
   OrderedItem,
   ShippingMethod,
-  OrderStatus,
 } from 'api/models/order.model';
 import { Product } from 'api/models/product.model';
 import { Shop } from 'api/models/shop.model';

@@ -43,7 +43,7 @@ export const Overview = () => {
         color: "bg-purple-500",
       },
       {
-        value: overviewData?.orders.canceled ?? 0,
+        value: overviewData?.orders.cancelled ?? 0,
         label: "Canceled Orders",
         color: "bg-red-500",
       },
@@ -123,11 +123,7 @@ export const Overview = () => {
           <StatsBlock statsInfo={statsInfo} />
         )}
 
-        <Analytics
-          products={analyticsData.products}
-          totalOrders={overviewData.orders.total}
-          totalProducts={overviewData.products.total}
-        />
+        <Analytics AnalyticsData={analyticsData} OverviewData={overviewData} />
 
         {loadingThisWeek ? (
           <OrdersTableSkeleton />

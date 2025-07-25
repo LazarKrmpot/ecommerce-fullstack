@@ -2,7 +2,7 @@ import { getAnalytics } from "@/services/overviewService";
 import { useState } from "react";
 import { toast } from "sonner";
 
-interface UsersAnalyticsProps {
+export interface UsersAnalyticsProps {
   products: {
     inStockPercentage: number;
     outOfStockPercentage: number;
