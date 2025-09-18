@@ -94,7 +94,7 @@ const MobileMenu = ({ user, onLogout, isActive }: MobileMenuProps) => {
             </Link>
           )}
           {user && (
-            <>
+            <div>
               <Link
                 to={ROUTES.PROFILE}
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
@@ -106,8 +106,16 @@ const MobileMenu = ({ user, onLogout, isActive }: MobileMenuProps) => {
               >
                 Profile
               </Link>
-              <Button onClick={handleLogout}>Sign Out</Button>
-            </>
+              <div className="w-full px-3 py-2">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleLogout}
+                >
+                  Sign Out
+                </Button>
+              </div>
+            </div>
           )}
           {user?.role === "admin" && (
             <section className="space-y-1 my-4">

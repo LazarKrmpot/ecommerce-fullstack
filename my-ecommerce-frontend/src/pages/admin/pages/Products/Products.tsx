@@ -12,12 +12,7 @@ import { Badge } from "@/components/ui/badge";
 
 import { CreateProductPayload, UpdateProductPayload } from "@/models/product";
 import { Input } from "@/components/ui/input";
-import {
-  updateProduct,
-  getFeaturedProducts,
-  deleteProduct,
-  createProduct,
-} from "@/services/productsService";
+import { updateProduct, deleteProduct, createProduct } from "@/services/productsService";
 import { useEffect, useState } from "react";
 
 import { ProductFilter } from "@/models/productFilters";
@@ -49,7 +44,8 @@ export const Products = () => {
 
   const { products, fetchProducts, setProducts, loading } = useProductsData(
     page,
-    perPage
+    perPage,
+    activeFilter === ProductFilter.FEATURED ? "isFeatured::eq::true" : undefined
   );
   const { stats, statsLoading, fetchStats } = useProductStats();
   const { categories, setCategories, isLoadingCategories, fetchCategories } =
@@ -61,7 +57,7 @@ export const Products = () => {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, [page, perPage]);
+  }, [page, perPage, activeFilter]);
 
   useEffect(() => {
     fetchStats();
@@ -71,11 +67,12 @@ export const Products = () => {
     switch (filter) {
       case ProductFilter.ALL:
         setActiveFilter(filter);
-        fetchProducts();
+        setPage(1);
         break;
       case ProductFilter.IN_STOCK:
         setActiveFilter(filter);
-        fetchProducts();
+        setPage(1);
+        await fetchProducts();
         setProducts((prev) => ({
           ...prev,
           data: prev.data.filter((product) => product.stock > 0),
@@ -83,24 +80,19 @@ export const Products = () => {
         break;
       case ProductFilter.OUT_OF_STOCK:
         setActiveFilter(filter);
+        setPage(1);
         setProducts((prev) => ({
           ...prev,
           data: prev.data.filter((product) => product.stock === 0),
         }));
         break;
       case ProductFilter.FEATURED:
-        try {
-          const featuredProducts = await getFeaturedProducts();
-          setActiveFilter(filter);
-          setProducts(featuredProducts);
-        } catch (error) {
-          console.error("Error fetching featured products:", error);
-          toast.error("Error fetching featured products");
-        }
+        setActiveFilter(filter);
+        setPage(1);
         break;
       default:
         setActiveFilter(filter);
-        fetchProducts();
+        setPage(1);
         break;
     }
   };

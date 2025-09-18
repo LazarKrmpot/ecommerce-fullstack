@@ -19,7 +19,8 @@ const RouteGuard: React.FC<RouteGuardProps> = ({
   fallback = fallback || (
     <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />
   );
-  const { user, loading } = useAuthStore();
+  const { user } = useAuthStore();
+  // const { user, loading } = useAuthStore();
 
   // if (loading) {
   //   return (

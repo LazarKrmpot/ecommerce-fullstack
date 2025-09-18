@@ -4,8 +4,8 @@ import {
   Users,
   Package,
   ShoppingCart,
-  BarChart3,
-  Settings,
+  // BarChart3,
+  // Settings,
 } from "lucide-react";
 
 export const menuItems = [
@@ -21,14 +21,14 @@ export const menuItems = [
     icon: ShoppingCart,
     path: `${ROUTES.ADMIN.DASHBOARD}/${ROUTES.ADMIN.RELATIVE.ORDERS}`,
   },
-  {
-    title: "Analytics",
-    icon: BarChart3,
-    path: `${ROUTES.ADMIN.DASHBOARD}/${ROUTES.ADMIN.RELATIVE.ANALYTICS}`,
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    path: `${ROUTES.ADMIN.DASHBOARD}/${ROUTES.ADMIN.RELATIVE.SETTINGS}`,
-  },
+  // {
+  //   title: "Analytics",
+  //   icon: BarChart3,
+  //   path: `${ROUTES.ADMIN.DASHBOARD}/${ROUTES.ADMIN.RELATIVE.ANALYTICS}`,
+  // },
+  // {
+  //   title: "Settings",
+  //   icon: Settings,
+  //   path: `${ROUTES.ADMIN.DASHBOARD}/${ROUTES.ADMIN.RELATIVE.SETTINGS}`,
+  // },
 ];

@@ -3,7 +3,11 @@ import { getProducts } from "@/services/productsService";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export const useProductsData = (page: number, limit: number) => {
+export const useProductsData = (
+  page: number,
+  limit: number,
+  filter?: string
+) => {
   const [products, setProducts] = useState<ProductsResponse>({
     data: [],
     meta: {
@@ -20,7 +24,7 @@ export const useProductsData = (page: number, limit: number) => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await getProducts(page, limit);
+      const response = await getProducts(page, limit, filter);
       setProducts(response);
     } catch (error) {
       console.error(error);

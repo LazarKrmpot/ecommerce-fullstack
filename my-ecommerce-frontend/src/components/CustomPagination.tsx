@@ -2,6 +2,7 @@ import React from "react";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -52,20 +53,78 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
               />
             </PaginationItem>
 
-            {Array.from({ length: totalPages }, (_, index) => (
-              <PaginationItem key={index}>
-                <PaginationLink
-                  onClick={() => onPageChange(index + 1)}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === index + 1
-                      ? "bg-primary text-white"
-                      : "hover:bg-muted text-black"
-                  }`}
-                >
-                  {index + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
+            {totalPages > 15 ? (
+              <>
+                <PaginationItem>
+                  <PaginationLink
+                    onClick={() => onPageChange(1)}
+                    className={`px-3 py-1 rounded-md ${
+                      currentPage === 1
+                        ? "bg-primary text-white"
+                        : "hover:bg-muted text-black"
+                    }`}
+                  >
+                    1
+                  </PaginationLink>
+                </PaginationItem>
+                {currentPage > 4 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+                {Array.from({ length: 3 }, (_, i) => {
+                  const page = Math.max(2, currentPage - 1) + i;
+                  if (page >= totalPages) return null;
+                  if (page <= 1) return null;
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => onPageChange(page)}
+                        className={`px-3 py-1 rounded-md ${
+                          currentPage === page
+                            ? "bg-primary text-white"
+                            : "hover:bg-muted text-black"
+                        }`}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+                {currentPage < totalPages - 3 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+                <PaginationItem>
+                  <PaginationLink
+                    onClick={() => onPageChange(totalPages)}
+                    className={`px-3 py-1 rounded-md ${
+                      currentPage === totalPages
+                        ? "bg-primary text-white"
+                        : "hover:bg-muted text-black"
+                    }`}
+                  >
+                    {totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              </>
+            ) : (
+              Array.from({ length: totalPages }, (_, index) => (
+                <PaginationItem key={index}>
+                  <PaginationLink
+                    onClick={() => onPageChange(index + 1)}
+                    className={`px-3 py-1 rounded-md ${
+                      currentPage === index + 1
+                        ? "bg-primary text-white"
+                        : "hover:bg-muted text-black"
+                    }`}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))
+            )}
 
             <PaginationItem>
               <PaginationNext

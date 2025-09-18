@@ -40,6 +40,15 @@ export class ProductType extends OmitType(Product, ['shopId', 'categoryId']) {
   categoryId: Ref<Category>;
 }
 
+export class CategorySearchType {
+  @ValidateNested()
+  @Type(() => Category)
+  categoryId: Ref<Category>;
+
+  @IsNumber()
+  itemsFound: number;
+}
+
 class createProductBody extends OmitType(Product, ['__v', '_id']) {
   @Exclude()
   @IsOptional()
@@ -86,6 +95,10 @@ class SearchResponse {
   @ValidateNested({ each: true })
   @Type(() => ProductType)
   data: Ref<ProductType>[];
+
+  @ValidateNested({ each: true })
+  @Type(() => CategorySearchType)
+  categoriesFound: Ref<CategorySearchType>[];
 
   @ValidateNested()
   @Type(() => FilterQueryParams)
@@ -178,7 +191,32 @@ export class ProductController {
       return { message: 'No products found matching the search query' };
     }
 
-    return { data: products, meta };
+    // Count only categories present in the search results
+    const categoryCountMap: Record<string, number> = {};
+    const categoryDocMap: Map<string, Ref<Category>> = new Map();
+
+    products.forEach((product) => {
+      const category: any = (product as any).categoryId;
+      const categoryId = String(category?._id || category);
+
+      if (category && typeof category === 'object' && category._id) {
+        if (!categoryDocMap.has(categoryId))
+          categoryDocMap.set(categoryId, category);
+      }
+
+      categoryCountMap[categoryId] = (categoryCountMap[categoryId] || 0) + 1;
+    });
+
+    // Build the categoriesFound array for categories present in the search results
+    const categoriesFound: CategorySearchType[] = Object.entries(
+      categoryCountMap,
+    ).map(([categoryId, itemsFound]) => ({
+      categoryId:
+        (categoryDocMap.get(categoryId) as any) || (categoryId as any),
+      itemsFound,
+    }));
+
+    return { data: products, meta, categoriesFound };
   }
 
   @Get('/:id')

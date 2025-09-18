@@ -5,10 +5,10 @@ import {
 } from "@/models/product";
 import api from "./api";
 
-export const getProducts = async (page = 1, limit = 20) => {
+export const getProducts = async (page = 1, limit = 20, filter?: string) => {
   try {
     const { data } = await api.get("/products", {
-      params: { page, limit },
+      params: { page, limit, ...(filter ? { filter } : {}) },
     });
     return { data: data.data, meta: data.meta };
   } catch (error) {
@@ -35,7 +35,7 @@ export const searchProducts = async (query: string) => {
         search: query,
       },
     });
-    return { data: data.data, meta: data.meta };
+    return { data: data.data, meta: data.meta, categoriesFound: data.categoriesFound };
   } catch (error) {
     console.error("Error searching products:", error);
     throw error;

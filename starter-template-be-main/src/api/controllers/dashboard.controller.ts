@@ -92,15 +92,18 @@ class WeeklyOrders {
 
 class OverviewResponse {
   @ValidateNested()
+  @Type(() => ProductsStats)
   products: ProductsStats;
 
   @ValidateNested()
+  @Type(() => OrdersStats)
   orders: OrdersStats;
 
   @ValidateNested()
+  @Type(() => UsersStats)
   users: UsersStats;
 
-  @ValidateNested()
+  @IsNumber()
   revenue: number;
 
   @ValidateNested()
@@ -368,21 +371,25 @@ export class DashboardController {
   }
 
   public async getOrdersWeeklySummary() {
-    // Get the last 7 days
-    const today = new Date();
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      date.setHours(0, 0, 0, 0);
+    // Get today's date in UTC at start of day
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
+
+    // Generate last 7 days in UTC (including today)
+    const last7DaysUTC = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(todayUTC);
+      date.setUTCDate(todayUTC.getUTCDate() - i);
       return date;
     }).reverse();
+
+    console.log('UTC dates:', last7DaysUTC);
 
     const stats = await this.orderService.aggregate([
       {
         $match: {
           createdAt: {
-            $gte: last7Days[0],
-            $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Include today
+            $gte: last7DaysUTC[0],
+            $lt: new Date(todayUTC.getTime() + 24 * 60 * 60 * 1000),
           },
         },
       },
@@ -393,6 +400,7 @@ export class DashboardController {
               $dateToString: {
                 format: '%Y-%m-%d',
                 date: '$createdAt',
+                timezone: 'UTC',
               },
             },
             status: '$status',
@@ -415,13 +423,10 @@ export class DashboardController {
         $sort: { _id: 1 },
       },
     ]);
-
-    // Create a map for easy lookup
     const statsMap = new Map(stats.map((stat) => [stat._id, stat.statuses]));
 
-    // Generate data for each of the last 7 days
-    const dailyOrders = last7Days.map((date) => {
-      const dateStr = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    const dailyOrders = last7DaysUTC.map((date) => {
+      const dateStr = date.toISOString().split('T')[0];
       const dayStatuses = statsMap.get(dateStr) || [];
 
       let totalOrders = 0;
@@ -431,9 +436,11 @@ export class DashboardController {
 
       dayStatuses.forEach((statusObj: any) => {
         totalOrders += statusObj.count;
-        if (statusObj.status === 'delivered') completedOrders = statusObj.count;
-        if (statusObj.status === 'pending') pendingOrders = statusObj.count;
-        if (statusObj.status === 'cancelled') cancelledOrders = statusObj.count;
+        if (statusObj.status === 'delivered')
+          completedOrders += statusObj.count;
+        if (statusObj.status === 'pending') pendingOrders += statusObj.count;
+        if (statusObj.status === 'cancelled')
+          cancelledOrders += statusObj.count;
       });
 
       return {

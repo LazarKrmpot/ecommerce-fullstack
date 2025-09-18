@@ -4,7 +4,8 @@ import { searchProducts, getProducts } from "@/services/productsService";
 import { debounce } from "@/utils/debounce";
 
 export const useProductSearch = (
-  setProducts: React.Dispatch<React.SetStateAction<ProductsResponse>>
+  setProducts: React.Dispatch<React.SetStateAction<ProductsResponse>>,
+  showAllProducts: boolean = true
 ) => {
   const [isSearching, setIsSearching] = useState(false);
   const page = 1;
@@ -43,7 +44,7 @@ export const useProductSearch = (
       e.preventDefault();
       const searchTerm = e.target.value.trim();
 
-      if (searchTerm === "") {
+      if (searchTerm === "" && showAllProducts) {
         debouncedSearch("");
         return;
       }

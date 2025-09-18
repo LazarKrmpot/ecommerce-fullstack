@@ -11,6 +11,7 @@ export interface ProductsResponse {
       totalResults: number;
     };
   };
+  categoriesFound?: CategorySearch[];
 }
 
 export interface Product {
@@ -33,6 +34,11 @@ export interface ProductStats {
   featured: number;
   inStock: number;
   outOfStock: number;
+}
+
+export interface CategorySearch {
+  categoryId: Category;
+  itemsFound: number;
 }
 
 export interface CreateProductPayload {

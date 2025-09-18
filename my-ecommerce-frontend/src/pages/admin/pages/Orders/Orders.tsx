@@ -139,14 +139,14 @@ export const Orders = () => {
             Here you can find all of your Orders
           </CardDescription>
         </div>
-        <Button
+        {/* <Button
           type="button"
           variant="default"
           onClick={() => fetchOrders()}
           className="transition-all !m-0 duration-200 mt-2 w-full sm:w-fit sm:ml-2"
         >
           <Plus /> Add Order
-        </Button>
+        </Button> */}
       </CardHeader>
       <CardContent>
         {statsLoading ? (
@@ -168,7 +168,7 @@ export const Orders = () => {
         ) : (
           <StatsBlock statsInfo={memoizedStatsInfo} />
         )}
-        <Separator className="" />
+        <Separator className="my-6" />
         <FilterBar setFilter={setCurrentFilter} />
         {loading ? (
           <>

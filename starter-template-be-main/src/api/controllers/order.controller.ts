@@ -255,7 +255,6 @@ export class OrderController {
 
     let finalDeliveryAddress: OrderDeliveryAddress;
 
-    console.log('Primary Address USER:', user);
     if (usePrimaryAddress) {
       const primaryAddress = user.deliveryAddresses?.find(
         (addr) => addr.isPrimary,

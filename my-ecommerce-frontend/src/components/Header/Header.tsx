@@ -6,6 +6,7 @@ import { User } from "@/models/user";
 import { ROUTES } from "@/constants/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Cart } from "./components/Cart/Cart";
+import { SearchProducts } from "./components/SearchProducts/SearchProducts";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -129,6 +130,7 @@ const Header = () => {
         </div>
 
         {/* Mobile menu */}
+        <SearchProducts className={`${isMobile ? "w-full" : "w-[50%]"} mb-5`} />
       </nav>
     </header>
   );

@@ -33,7 +33,7 @@ const Home: React.FC = () => {
     <div className="space-y-8 md:space-y-12">
       {/* Hero Section */}
       <section>
-        <div className="relative w-full h-screen overflow-hidden">
+        <div className="relative w-full h-[40vh] overflow-hidden">
           <img
             src={bannerImage}
             alt="Xtreme Moto Shop Banner"
