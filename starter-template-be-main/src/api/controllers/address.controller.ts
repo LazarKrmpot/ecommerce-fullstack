@@ -1,11 +1,7 @@
-import { OmitType } from '@nestjs/swagger';
-import { Ref } from '@typegoose/typegoose';
-import { OrderDeliveryAddress } from 'api/models/order.model';
 import { DeliveryAddressInfo, User } from 'api/models/user.model';
 import { Roles } from 'api/models/user.model';
 import { UserService } from 'api/services/user.service';
-import { Expose, Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import {
   Authorized,
   Body,

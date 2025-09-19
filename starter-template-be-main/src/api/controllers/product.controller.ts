@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { OmitType } from '@nestjs/swagger';
 import { Ref } from '@typegoose/typegoose';
 import { Category } from 'api/models/category.model';
 import { Currency, Product, ProductStatus } from 'api/models/product.model';
